@@ -10,6 +10,8 @@ npm run dev
 
 O servidor escuta na porta `3000`. As variáveis de ambiente `PORT` e `HOST` permitem alterar a porta e o endereço de escuta (padrão: `0.0.0.0`).
 
+O CORS permite qualquer origem (`Access-Control-Allow-Origin: *`) para os métodos `GET`, `POST`, `PUT` e `OPTIONS`, incluindo preflight. Requisições CORS com credenciais não estão habilitadas.
+
 Para compilar e executar:
 
 ```bash
@@ -112,3 +114,11 @@ O cálculo é separado por fundo e reúne filiais pelos oito primeiros dígitos 
 Quando ultrapassa `percentual_maximo`, são barradas as notas do sacado em ordem decrescente de `linha`, com o motivo `CONCENTRACAO_MAXIMA_SACADO`. O total do fundo diminui a cada retirada; por isso, todos os sacados são reavaliados até respeitarem o limite. Os grupos são percorridos na ordem de sua primeira nota aprovada na entrada. Igualdade com o limite é permitida.
 
 O cálculo usa centavos inteiros e comparação exata de percentuais, sem arredondamento intermediário. Pode retirar todas as notas de valor positivo; um fundo com total zero encerra a análise sem divisão por zero. A função devolve as notas na ordem de entrada, preserva rejeições anteriores e não modifica os objetos recebidos. Regra inativa ou ausente não altera a classificação. O upload ainda retorna o gabarito fixo.
+
+### Concentração máxima do cedente
+
+`execucao.validarConcentracaoMaximaCedente(recebiveis)` aplica o `percentual_maximo` de `CONCENTRACAO_MAXIMA_CEDENTE` dentro de cada fundo, agrupando pelo CNPJ completo de `DOC_CEDENTE`, com ou sem máscara. Filiais de CNPJs diferentes são tratadas como cedentes distintos; a configuração atual não define agrupamento por raiz para esta regra.
+
+A função recebe notas com os campos comuns de análise (`linha`, `DOC_FUNDO`, `VALOR_NOMINAL`, `status`, `barrado_por` opcional), além de `DOC_CEDENTE`. Notas já barradas ficam fora dos totais. Retira as notas de maior linha do cedente, registra `CONCENTRACAO_MAXIMA_CEDENTE`, recalcula o fundo e reavalia todos os grupos até respeitarem o limite. Usa o mesmo cálculo exato em centavos da regra de sacado, mantendo a ordem de entrada e sem alterar os objetos originais.
+
+A configuração é capturada uma vez por execução. A regra está inicialmente inativa: nesse caso, ou se estiver ausente, a classificação é preservada. A integração dos validadores com o upload continua pendente.

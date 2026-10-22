@@ -2,6 +2,8 @@
 
 URL local padrão: `http://localhost:3000`. A porta pode ser alterada pela variável `PORT`.
 
+CORS está habilitado para qualquer origem (`Access-Control-Allow-Origin: *`), com os métodos `GET`, `POST`, `PUT` e `OPTIONS`. O servidor responde às requisições preflight e permite os cabeçalhos solicitados pelo cliente. Credenciais CORS não estão habilitadas.
+
 Para iniciar, execute na raiz do repositório:
 
 ```bash
