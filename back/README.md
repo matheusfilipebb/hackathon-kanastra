@@ -70,4 +70,10 @@ O controller delega ao service as validações e ao repository a leitura e grava
 
 O upload continua retornando o gabarito fixo nesta etapa. Execute os testes com `npm test`.
 
+## Motor de análise
+
+`AnaliseService.validarCnpjSacado(documento)` retorna um booleano para a regra individual `CNPJ_SACADO_VALIDO`. Aceita CNPJ numérico como string de 14 dígitos ou com máscara `00.000.000/0000-00`, preservando zeros à esquerda. Confere os dois dígitos verificadores pelo módulo 11 e rejeita sequências de dígitos repetidos e formatos inválidos. A validação é local, sem APIs e sem consulta à situação cadastral.
+
+O método está disponível no service; o upload continua retornando o gabarito fixo nesta etapa.
+
 O histórico de prompts está em `prompt/`.
