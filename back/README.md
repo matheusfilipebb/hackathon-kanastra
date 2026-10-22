@@ -19,6 +19,18 @@ npm start
 
 Encerre o servidor com `Ctrl+C`.
 
+## Documentação da API
+
+Com o servidor iniciado, acesse [Swagger UI](http://localhost:3000/docs) para consultar e testar as rotas. A especificação OpenAPI está disponível em `/docs/json` e `/docs/yaml`.
+
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| POST | `/recebiveis/upload` | Envia um CSV no campo `file` e recebe o gabarito fixo. |
+| GET | `/validadores` | Consulta a configuração atual. |
+| PUT | `/validadores` | Valida e substitui a configuração completa. |
+
+O Swagger inclui os formatos de requisição, exemplos, respostas de sucesso e erros `400`, `413`, `415` e `500`, conforme a rota. A operação PUT altera o arquivo de configuração também quando executada pela documentação.
+
 ## Upload de CSV
 
 `POST /recebiveis/upload` recebe um arquivo no campo `file` de um formulário `multipart/form-data` (limite de 50 MiB).
@@ -30,7 +42,7 @@ curl -X POST http://localhost:3000/recebiveis/upload \
 
 O controller interpreta o CSV em UTF-8, separado por `;`, com suporte a BOM, campos entre aspas, aspas escapadas e quebras de linha LF/CRLF. Verifica o cabeçalho e a quantidade de campos, mantendo os valores como strings.
 
-Por enquanto, todo CSV válido retorna o conteúdo completo de `resultado_esperado_100k.json`, independentemente das notas enviadas. Ainda não há validação de elegibilidade. Mantenha esse JSON na pasta `antecipe`, ao lado de `hackathon-kanastra`, como nos arquivos fornecidos.
+Por enquanto, todo CSV válido retorna o conteúdo completo de `data/resultado_esperado_100k.json`, independentemente das notas enviadas. Ainda não há validação de elegibilidade.
 
 Arquivo ausente ou CSV inválido retorna `400`; conteúdo que não seja multipart retorna `415`; arquivo acima do limite retorna `413`.
 
