@@ -76,4 +76,8 @@ O upload continua retornando o gabarito fixo nesta etapa. Execute os testes com 
 
 O método está disponível no service; o upload continua retornando o gabarito fixo nesta etapa.
 
+Para a regra `SITUACAO_CADASTRAL_SACADO`, chame `await analiseService.iniciarExecucao()` uma vez antes de percorrer as notas. O repository carrega `data/cnpj_situacao_mock.csv` (colunas `DOC;SITUACAO_CADASTRAL`) em um mapa em memória. Use `execucao.validarSituacaoCadastralSacado(docSacado)` em cada nota: a consulta não lê arquivos nem faz chamadas externas.
+
+A regra usa `situacoes_aceitas` da configuração; CNPJ ausente no cadastro ou com situação não aceita retorna `false`. Quando a regra está inativa ou ausente, retorna `true` e não carrega o CSV. Uma nova execução recarrega configuração e cadastro, preservando o retrato usado pela execução anterior.
+
 O histórico de prompts está em `prompt/`.
