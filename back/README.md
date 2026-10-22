@@ -102,3 +102,13 @@ O histórico de prompts está em `prompt/`.
 ## Agrupamento para análise coletiva
 
 `analiseService.agruparPorFundo(recebiveis)` retorna um `Map`, com o valor de `DOC_FUNDO` como chave e a lista de notas do fundo como valor. Passe as notas na ordem do CSV: essa ordem é mantida dentro de cada grupo e os fundos aparecem na ordem de sua primeira ocorrência. O agrupamento preserva os objetos e todos os campos, sem alterar a entrada nem remover notas repetidas. Nesta etapa, ainda não calcula concentração.
+
+### Concentração máxima do sacado
+
+`execucao.validarConcentracaoMaximaSacado(recebiveis)` recebe notas já classificadas pelos validadores individuais, com `linha` (a linha original do CSV), `DOC_FUNDO`, `DOC_SACADO`, `VALOR_NOMINAL`, `status` e, quando barradas, `barrado_por`. Campos adicionais são preservados.
+
+O cálculo é separado por fundo e reúne filiais pelos oito primeiros dígitos do CNPJ do sacado (`RAIZ_CNPJ`). Notas com `status: BARRADO` ficam fora de ambos os totais. A concentração é o valor nominal aprovado do sacado dividido pelo valor nominal aprovado restante do fundo.
+
+Quando ultrapassa `percentual_maximo`, são barradas as notas do sacado em ordem decrescente de `linha`, com o motivo `CONCENTRACAO_MAXIMA_SACADO`. O total do fundo diminui a cada retirada; por isso, todos os sacados são reavaliados até respeitarem o limite. Os grupos são percorridos na ordem de sua primeira nota aprovada na entrada. Igualdade com o limite é permitida.
+
+O cálculo usa centavos inteiros e comparação exata de percentuais, sem arredondamento intermediário. Pode retirar todas as notas de valor positivo; um fundo com total zero encerra a análise sem divisão por zero. A função devolve as notas na ordem de entrada, preserva rejeições anteriores e não modifica os objetos recebidos. Regra inativa ou ausente não altera a classificação. O upload ainda retorna o gabarito fixo.

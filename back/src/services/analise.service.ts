@@ -9,6 +9,8 @@ import { validarNaoVencida } from '../validators/individuais/nao-vencida.validat
 import { validarPrazoMaximo } from '../validators/individuais/prazo-maximo.validator.js';
 import { validarPrazoMinimo } from '../validators/individuais/prazo-minimo.validator.js';
 import { agruparPorFundo } from '../utils/agrupar-por-fundo.js';
+import { validarConcentracaoMaximaSacado } from '../validators/coletivos/concentracao-maxima-sacado.validator.js';
+import type { RecebivelAnalisado } from '../types/recebivel-analisado.js';
 
 function obterParametroNumerico(
   validadores: ConfiguracaoValidadores['validadores'],
@@ -47,6 +49,11 @@ export class AnaliseService {
 
   async iniciarExecucao() {
     const validadores = await this.recuperarValidadores();
+    const concentracaoSacado = obterParametroNumerico(validadores, 'CONCENTRACAO_MAXIMA_SACADO', 'percentual_maximo');
+    if (concentracaoSacado !== undefined && validadores.find(regra =>
+      regra.codigo === 'CONCENTRACAO_MAXIMA_SACADO' && regra.ativo)?.parametros.agrupamento !== 'RAIZ_CNPJ') {
+      throw new Error('CONCENTRACAO_MAXIMA_SACADO.agrupamento deve ser RAIZ_CNPJ.');
+    }
     const valorMinimo = obterParametroNumerico(validadores, 'VALOR_MINIMO', 'valor_minimo');
     const prazoMaximo = obterParametroNumerico(validadores, 'PRAZO_MAXIMO', 'prazo_maximo_dias', true);
     const prazoMinimo = obterParametroNumerico(validadores, 'PRAZO_MINIMO', 'prazo_minimo_dias', true);
@@ -82,6 +89,8 @@ export class AnaliseService {
         prazoMaximo === undefined || validarPrazoMaximo(vencimento, referencia, prazoMaximo),
       validarPrazoMinimo: (vencimento: unknown, referencia: unknown): boolean =>
         prazoMinimo === undefined || validarPrazoMinimo(vencimento, referencia, prazoMinimo),
+      validarConcentracaoMaximaSacado: <T extends RecebivelAnalisado>(recebiveis: readonly T[]): T[] =>
+        concentracaoSacado === undefined ? [...recebiveis] : validarConcentracaoMaximaSacado(recebiveis, concentracaoSacado),
     };
   }
 }
