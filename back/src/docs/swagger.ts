@@ -9,8 +9,8 @@ export async function registerDocumentation(server: FastifyInstance) {
       info: {
         title: 'Antecipe API',
         version: '0.1.0',
-        description: 'Upload de recebíveis e configuração dos validadores. '
-          + 'O upload ainda retorna o gabarito fixo, sem executar as regras de elegibilidade.',
+        description: 'Upload de recebíveis, análise individual e coletiva e configuração dos validadores. '
+          + 'As datas são avaliadas em relação à aquisição de cada nota no estoque histórico.',
       },
       tags: [
         { name: 'Recebíveis', description: 'Envio de notas em CSV.' },

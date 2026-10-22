@@ -29,7 +29,7 @@ Com o servidor iniciado, acesse [Swagger UI](http://localhost:3000/docs) para co
 
 | Método | Rota | Descrição |
 | --- | --- | --- |
-| POST | `/recebiveis/upload` | Envia um CSV no campo `file` e recebe o gabarito fixo. |
+| POST | `/recebiveis/upload` | Envia um CSV no campo `file` e recebe a análise calculada das notas. |
 | GET | `/validadores` | Consulta a configuração atual. |
 | PUT | `/validadores` | Valida e substitui a configuração completa. |
 
@@ -46,7 +46,7 @@ curl -X POST http://localhost:3000/recebiveis/upload \
 
 O controller interpreta o CSV em UTF-8, separado por `;`, com suporte a BOM, campos entre aspas, aspas escapadas e quebras de linha LF/CRLF. Verifica o cabeçalho e a quantidade de campos, mantendo os valores como strings.
 
-Por enquanto, todo CSV válido retorna o conteúdo completo de `data/resultado_esperado_100k.json`, independentemente das notas enviadas. Ainda não há validação de elegibilidade.
+Cada CSV válido é analisado pelo `AnaliseService`: primeiro as regras individuais ativas, depois as concentrações de sacado e cedente por fundo. A resposta contém uma classificação para cada nota enviada, na ordem original. O gabarito não é consultado pelo endpoint.
 
 Arquivo ausente ou CSV inválido retorna `400`; conteúdo que não seja multipart retorna `415`; arquivo acima do limite retorna `413`.
 
@@ -72,13 +72,13 @@ O controller delega ao service as validações e ao repository a leitura e grava
 - A taxa de precificação não pode ser negativa e `base_dias` deve ser um inteiro positivo.
 - Códigos de validadores não podem se repetir. Os parâmetros são validados também nas regras inativas.
 
-O upload continua retornando o gabarito fixo nesta etapa. Execute os testes com `npm test`.
+As atualizações de configuração são usadas na próxima análise de upload. Execute os testes com `npm test`.
 
 ## Motor de análise
 
 `AnaliseService.validarCnpjSacado(documento)` retorna um booleano para a regra individual `CNPJ_SACADO_VALIDO`. Aceita CNPJ numérico como string de 14 dígitos ou com máscara `00.000.000/0000-00`, preservando zeros à esquerda. Confere os dois dígitos verificadores pelo módulo 11 e rejeita sequências de dígitos repetidos e formatos inválidos. A validação é local, sem APIs e sem consulta à situação cadastral.
 
-O método está disponível no service; o upload continua retornando o gabarito fixo nesta etapa.
+O upload usa esse método quando `CNPJ_SACADO_VALIDO` está ativo na configuração.
 
 Para a regra `SITUACAO_CADASTRAL_SACADO`, chame `await analiseService.iniciarExecucao()` uma vez antes de percorrer as notas. O repository carrega `data/cnpj_situacao_mock.csv` (colunas `DOC;SITUACAO_CADASTRAL`) em um mapa em memória. Use `execucao.validarSituacaoCadastralSacado(docSacado)` em cada nota: a consulta não lê arquivos nem faz chamadas externas.
 
@@ -95,15 +95,15 @@ Também estão disponíveis na execução:
 | `validarPrazoMaximo(vencimento, referencia)` | Diferença em dias menor ou igual a `prazo_maximo_dias`. |
 | `validarPrazoMinimo(vencimento, referencia)` | Diferença em dias maior ou igual a `prazo_minimo_dias`. |
 
-Datas devem ser strings `dd/mm/aaaa` válidas. A referência é obrigatória na chamada: use a data da análise ou a aquisição para uma análise histórica, conforme o contexto desejado. Os cálculos usam dias civis em UTC para evitar diferenças de horário de verão. Vencimentos anteriores à referência são rejeitados por `NAO_VENCIDA`; `PRAZO_MAXIMO` verifica apenas o limite superior.
+Datas devem ser strings `dd/mm/aaaa` válidas. Nas funções individuais, a referência é explícita. No upload, a referência é `DATA_AQUISICAO` de cada nota: trata-se da análise histórica de um estoque já adquirido. O método `analisarRecebiveis(recebiveis, dataReferencia)` também permite uma referência comum explícita no service. Os cálculos usam dias civis em UTC para evitar diferenças de horário de verão. Vencimentos anteriores à referência são rejeitados por `NAO_VENCIDA`; `PRAZO_MAXIMO` verifica apenas o limite superior.
 
-Todos os limites são inclusivos, vêm da configuração e ficam fixos durante cada execução. Regras inativas ou ausentes retornam `true`. Dados inválidos retornam `false` quando a regra está ativa, e limites configurados inválidos impedem iniciar a execução. O upload permanece com a resposta de gabarito fixo.
+Todos os limites são inclusivos, vêm da configuração e ficam fixos durante cada execução. Regras inativas ou ausentes retornam `true`. Dados inválidos retornam `false` quando a regra está ativa, e limites configurados inválidos impedem iniciar a execução. No upload, todos os motivos individuais são acumulados antes de aplicar as regras coletivas.
 
 O histórico de prompts está em `prompt/`.
 
 ## Agrupamento para análise coletiva
 
-`analiseService.agruparPorFundo(recebiveis)` retorna um `Map`, com o valor de `DOC_FUNDO` como chave e a lista de notas do fundo como valor. Passe as notas na ordem do CSV: essa ordem é mantida dentro de cada grupo e os fundos aparecem na ordem de sua primeira ocorrência. O agrupamento preserva os objetos e todos os campos, sem alterar a entrada nem remover notas repetidas. Nesta etapa, ainda não calcula concentração.
+`analiseService.agruparPorFundo(recebiveis)` retorna um `Map`, com o valor de `DOC_FUNDO` como chave e a lista de notas do fundo como valor. Passe as notas na ordem do CSV: essa ordem é mantida dentro de cada grupo e os fundos aparecem na ordem de sua primeira ocorrência. O agrupamento preserva os objetos e todos os campos, sem alterar a entrada nem remover notas repetidas.
 
 ### Concentração máxima do sacado
 
@@ -113,7 +113,7 @@ O cálculo é separado por fundo e reúne filiais pelos oito primeiros dígitos 
 
 Quando ultrapassa `percentual_maximo`, são barradas as notas do sacado em ordem decrescente de `linha`, com o motivo `CONCENTRACAO_MAXIMA_SACADO`. O total do fundo diminui a cada retirada; por isso, todos os sacados são reavaliados até respeitarem o limite. Os grupos são percorridos na ordem de sua primeira nota aprovada na entrada. Igualdade com o limite é permitida.
 
-O cálculo usa centavos inteiros e comparação exata de percentuais, sem arredondamento intermediário. Pode retirar todas as notas de valor positivo; um fundo com total zero encerra a análise sem divisão por zero. A função devolve as notas na ordem de entrada, preserva rejeições anteriores e não modifica os objetos recebidos. Regra inativa ou ausente não altera a classificação. O upload ainda retorna o gabarito fixo.
+O cálculo usa centavos inteiros e comparação exata de percentuais, sem arredondamento intermediário. Pode retirar todas as notas de valor positivo; um fundo com total zero encerra a análise sem divisão por zero. A função devolve as notas na ordem de entrada, preserva rejeições anteriores e não modifica os objetos recebidos. Regra inativa ou ausente não altera a classificação. O upload executa essa regra quando está ativa.
 
 ### Concentração máxima do cedente
 
@@ -121,4 +121,8 @@ O cálculo usa centavos inteiros e comparação exata de percentuais, sem arredo
 
 A função recebe notas com os campos comuns de análise (`linha`, `DOC_FUNDO`, `VALOR_NOMINAL`, `status`, `barrado_por` opcional), além de `DOC_CEDENTE`. Notas já barradas ficam fora dos totais. Retira as notas de maior linha do cedente, registra `CONCENTRACAO_MAXIMA_CEDENTE`, recalcula o fundo e reavalia todos os grupos até respeitarem o limite. Usa o mesmo cálculo exato em centavos da regra de sacado, mantendo a ordem de entrada e sem alterar os objetos originais.
 
-A configuração é capturada uma vez por execução. A regra está inicialmente inativa: nesse caso, ou se estiver ausente, a classificação é preservada. A integração dos validadores com o upload continua pendente.
+A configuração é capturada uma vez por execução. A regra está inicialmente inativa: nesse caso, ou se estiver ausente, a classificação é preservada. O upload executa essa regra quando está ativa. As duas concentrações são reaplicadas até que nenhuma nota adicional seja recusada, pois uma retirada por cedente pode afetar a concentração de sacado.
+
+## Comparação com o resultado esperado
+
+Execute `npm run comparar -- ../../estoque_antecipe.csv ../docs/comparacao-resultado-esperado.json` dentro de `back/`. O script analisa o CSV de forma independente, compara status e conjuntos de motivos e grava o relatório JSON, sem alterar o gabarito nem a configuração. Veja o [relatório de comparação](../docs/comparacao-resultado-esperado.md) para os resultados e as divergências identificadas.

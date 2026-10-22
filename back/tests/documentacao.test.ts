@@ -42,6 +42,8 @@ test('Swagger documenta as três operações e preserva o upload multipart', asy
       + `Content-Type: text/csv\r\n\r\n${csv}\r\n--${boundary}--\r\n`,
   });
   assert.equal(upload.statusCode, 200);
-  const expected = JSON.parse(await readFile(new URL('../data/resultado_esperado_100k.json', import.meta.url), 'utf-8'));
-  assert.deepEqual(upload.json(), expected);
+  assert.deepEqual(upload.json(), [{
+    linha: 2, id: '000123', status: 'BARRADO',
+    barrado_por: ['CNPJ_SACADO_VALIDO', 'SITUACAO_CADASTRAL_SACADO'],
+  }]);
 });

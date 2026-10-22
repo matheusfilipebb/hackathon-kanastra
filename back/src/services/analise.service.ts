@@ -12,6 +12,7 @@ import { agruparPorFundo } from '../utils/agrupar-por-fundo.js';
 import { validarConcentracaoMaximaSacado } from '../validators/coletivos/concentracao-maxima-sacado.validator.js';
 import type { RecebivelAnalisado, RecebivelAnalisadoCedente } from '../types/recebivel-analisado.js';
 import { validarConcentracaoMaximaCedente } from '../validators/coletivos/concentracao-maxima-cedente.validator.js';
+import type { RecebivelCsv, ResultadoAnalise } from '../types/recebivel-csv.js';
 
 function obterParametroNumerico(
   validadores: ConfiguracaoValidadores['validadores'],
@@ -46,6 +47,44 @@ export class AnaliseService {
 
   agruparPorFundo<T extends { DOC_FUNDO: string }>(recebiveis: readonly T[]): Map<string, T[]> {
     return agruparPorFundo(recebiveis);
+  }
+
+  async analisarRecebiveis(recebiveis: readonly RecebivelCsv[], dataReferencia?: string): Promise<ResultadoAnalise[]> {
+    const execucao = await this.iniciarExecucao();
+    let analisados = recebiveis.map(nota => {
+      // A análise do estoque histórico usa a data em que cada título foi adquirido.
+      const referencia = dataReferencia ?? nota.DATA_AQUISICAO;
+      const verificacoes: Record<string, () => boolean> = {
+        CNPJ_SACADO_VALIDO: () => this.validarCnpjSacado(nota.DOC_SACADO),
+        SITUACAO_CADASTRAL_SACADO: () => execucao.validarSituacaoCadastralSacado(nota.DOC_SACADO),
+        TIPO_RECEBIVEL: () => execucao.validarTipoRecebivel(nota.TIPO_RECEBIVEL),
+        VALOR_MINIMO: () => execucao.validarValorMinimo(nota.VALOR_NOMINAL),
+        NAO_VENCIDA: () => execucao.validarNaoVencida(nota.DATA_VENCIMENTO_ORIGINAL, referencia),
+        PRAZO_MAXIMO: () => execucao.validarPrazoMaximo(nota.DATA_VENCIMENTO_ORIGINAL, referencia),
+        PRAZO_MINIMO: () => execucao.validarPrazoMinimo(nota.DATA_VENCIMENTO_ORIGINAL, referencia),
+      };
+      const barradoPor = execucao.validadores
+        .filter(regra => regra.ativo && verificacoes[regra.codigo] && !verificacoes[regra.codigo]())
+        .map(regra => regra.codigo);
+      const status: 'APROVADO' | 'BARRADO' = barradoPor.length ? 'BARRADO' : 'APROVADO';
+      return { ...nota, status, ...(barradoPor.length ? { barrado_por: barradoPor } : {}) };
+    });
+
+    // Uma retirada pelo cedente pode afetar novamente a concentração do sacado.
+    // Nenhuma nota é reintroduzida: o ciclo termina quando não há novas recusas.
+    let quantidadeAnterior: number;
+    let quantidadeAtual = analisados.filter(nota => nota.status === 'BARRADO').length;
+    do {
+      quantidadeAnterior = quantidadeAtual;
+      analisados = execucao.validarConcentracaoMaximaSacado(analisados);
+      analisados = execucao.validarConcentracaoMaximaCedente(analisados);
+      quantidadeAtual = analisados.filter(nota => nota.status === 'BARRADO').length;
+    } while (quantidadeAtual > quantidadeAnterior);
+
+    return analisados.map(nota => ({
+      linha: nota.linha, id: nota.NU_DOCUMENTO, status: nota.status,
+      ...(nota.barrado_por?.length ? { barrado_por: nota.barrado_por } : {}),
+    }));
   }
 
   async iniciarExecucao() {
