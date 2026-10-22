@@ -4,6 +4,26 @@ import { validarCnpjSacado } from '../validators/individuais/cnpj-sacado-valido.
 import { SituacaoCadastralRepository } from '../repositories/situacao-cadastral.repository.js';
 import { validarSituacaoCadastralSacado } from '../validators/individuais/situacao-cadastral-sacado.validator.js';
 import { validarTipoRecebivel } from '../validators/individuais/tipo-recebivel.validator.js';
+import { validarValorMinimo } from '../validators/individuais/valor-minimo.validator.js';
+import { validarNaoVencida } from '../validators/individuais/nao-vencida.validator.js';
+import { validarPrazoMaximo } from '../validators/individuais/prazo-maximo.validator.js';
+import { validarPrazoMinimo } from '../validators/individuais/prazo-minimo.validator.js';
+
+function obterParametroNumerico(
+  validadores: ConfiguracaoValidadores['validadores'],
+  codigo: string,
+  campo: string,
+  inteiro = false,
+): number | undefined {
+  const regra = validadores.find(validador => validador.codigo === codigo && validador.ativo);
+  if (!regra) return undefined;
+  const valor = regra.parametros[campo];
+  if (typeof valor !== 'number' || !Number.isFinite(valor) || valor < 0
+    || (inteiro && !Number.isSafeInteger(valor))) {
+    throw new Error(`${codigo}.${campo} deve ser um número ${inteiro ? 'inteiro ' : ''}maior ou igual a zero.`);
+  }
+  return valor;
+}
 
 export class AnaliseService {
   constructor(
@@ -22,6 +42,10 @@ export class AnaliseService {
 
   async iniciarExecucao() {
     const validadores = await this.recuperarValidadores();
+    const valorMinimo = obterParametroNumerico(validadores, 'VALOR_MINIMO', 'valor_minimo');
+    const prazoMaximo = obterParametroNumerico(validadores, 'PRAZO_MAXIMO', 'prazo_maximo_dias', true);
+    const prazoMinimo = obterParametroNumerico(validadores, 'PRAZO_MINIMO', 'prazo_minimo_dias', true);
+    const naoVencidaAtiva = validadores.some(validador => validador.codigo === 'NAO_VENCIDA' && validador.ativo);
     const regraTipo = validadores.find(validador => validador.codigo === 'TIPO_RECEBIVEL' && validador.ativo);
     const tiposAceitos = regraTipo?.parametros.tipos_aceitos;
     if (regraTipo && (!Array.isArray(tiposAceitos) || tiposAceitos.length === 0
@@ -45,6 +69,14 @@ export class AnaliseService {
         !regra || validarSituacaoCadastralSacado(documento, situacoes, aceitas),
       validarTipoRecebivel: (tipo: unknown): boolean =>
         !regraTipo || validarTipoRecebivel(tipo, tipos),
+      validarValorMinimo: (valorNominal: unknown): boolean =>
+        valorMinimo === undefined || validarValorMinimo(valorNominal, valorMinimo),
+      validarNaoVencida: (vencimento: unknown, referencia: unknown): boolean =>
+        !naoVencidaAtiva || validarNaoVencida(vencimento, referencia),
+      validarPrazoMaximo: (vencimento: unknown, referencia: unknown): boolean =>
+        prazoMaximo === undefined || validarPrazoMaximo(vencimento, referencia, prazoMaximo),
+      validarPrazoMinimo: (vencimento: unknown, referencia: unknown): boolean =>
+        prazoMinimo === undefined || validarPrazoMinimo(vencimento, referencia, prazoMinimo),
     };
   }
 }

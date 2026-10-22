@@ -82,4 +82,17 @@ A regra usa `situacoes_aceitas` da configuração; CNPJ ausente no cadastro ou c
 
 Na mesma execução, `execucao.validarTipoRecebivel(tipo)` verifica se o valor de `TIPO_RECEBIVEL` está na lista `parametros.tipos_aceitos` da regra ativa. A comparação é exata. A configuração inicial aceita `Duplicata` e `Duplicata de Serviço`; outros tipos só passam se incluídos na configuração. A lista é capturada uma vez por execução e a regra inativa ou ausente não barra a nota pelo tipo.
 
+Também estão disponíveis na execução:
+
+| Método | Critério quando a regra está ativa |
+| --- | --- |
+| `validarValorMinimo(valorNominal)` | Valor maior ou igual a `valor_minimo`. Aceita número ou string no padrão do CSV, como `100,00`. |
+| `validarNaoVencida(vencimento, referencia)` | Vencimento na data de referência ou depois dela. |
+| `validarPrazoMaximo(vencimento, referencia)` | Diferença em dias menor ou igual a `prazo_maximo_dias`. |
+| `validarPrazoMinimo(vencimento, referencia)` | Diferença em dias maior ou igual a `prazo_minimo_dias`. |
+
+Datas devem ser strings `dd/mm/aaaa` válidas. A referência é obrigatória na chamada: use a data da análise ou a aquisição para uma análise histórica, conforme o contexto desejado. Os cálculos usam dias civis em UTC para evitar diferenças de horário de verão. Vencimentos anteriores à referência são rejeitados por `NAO_VENCIDA`; `PRAZO_MAXIMO` verifica apenas o limite superior.
+
+Todos os limites são inclusivos, vêm da configuração e ficam fixos durante cada execução. Regras inativas ou ausentes retornam `true`. Dados inválidos retornam `false` quando a regra está ativa, e limites configurados inválidos impedem iniciar a execução. O upload permanece com a resposta de gabarito fixo.
+
 O histórico de prompts está em `prompt/`.
