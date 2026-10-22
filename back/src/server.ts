@@ -1,4 +1,6 @@
 import Fastify from 'fastify';
+import { recebiveisRoutes } from './routes/recebiveis.routes.js';
+import { validadoresRoutes } from './routes/validadores.routes.js';
 
 const server = Fastify({ logger: true });
 
@@ -14,6 +16,8 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
 }
 
 try {
+  await server.register(recebiveisRoutes);
+  await server.register(validadoresRoutes);
   await server.listen({
     port: Number(process.env.PORT ?? 3000),
     host: process.env.HOST ?? '0.0.0.0',
