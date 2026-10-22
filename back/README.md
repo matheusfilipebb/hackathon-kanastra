@@ -48,6 +48,14 @@ curl -X PUT http://localhost:3000/validadores \
 
 O arquivo `data/validadores_antecipe.json`, dentro do backend, é lido a cada consulta e atualizado pelo PUT. As alterações persistem após reiniciar o servidor. O mesmo caminho é usado em desenvolvimento e na versão compilada.
 
-O PUT valida a estrutura, os campos obrigatórios, a taxa não negativa, a base de dias positiva e códigos duplicados; payloads inválidos retornam `400`. Os parâmetros específicos de cada regra ainda não são validados. O upload continua retornando o gabarito fixo nesta etapa.
+O controller delega ao service as validações e ao repository a leitura e gravação atômica de `data/validadores_antecipe.json`. O PUT rejeita configurações inválidas com `400`, sem alterar o arquivo:
+
+- `VALOR_MINIMO.valor_minimo` e os percentuais devem ser números finitos maiores ou iguais a zero.
+- `PRAZO_MINIMO.prazo_minimo_dias` e `PRAZO_MAXIMO.prazo_maximo_dias` devem ser inteiros maiores ou iguais a zero.
+- `TIPO_RECEBIVEL.tipos_aceitos` deve ser uma lista não vazia contendo apenas `Duplicata`, `Duplicata de Serviço`, `Cheque`, `CCB` ou `Nota Comercial`.
+- A taxa de precificação não pode ser negativa e `base_dias` deve ser um inteiro positivo.
+- Códigos de validadores não podem se repetir. Os parâmetros são validados também nas regras inativas.
+
+O upload continua retornando o gabarito fixo nesta etapa. Execute os testes com `npm test`.
 
 O histórico de prompts está em `prompt/`.

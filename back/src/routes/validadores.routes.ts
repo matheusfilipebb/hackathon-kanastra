@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import {
-  getValidadores, setValidadores, type ConfiguracaoValidadores,
+  getValidadores, setValidadores,
 } from '../controllers/validadores.controller.js';
+import type { ConfiguracaoValidadores } from '../types/validadores.js';
 
 const configuracaoSchema = {
   type: 'object',
