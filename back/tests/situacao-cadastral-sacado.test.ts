@@ -13,11 +13,15 @@ const configuracao = async (): Promise<ConfiguracaoValidadores> => JSON.parse(
   await readFile(new URL('../data/validadores_antecipe.json', import.meta.url), 'utf-8'),
 );
 
-test('repository lê o CSV fornecido e indexa os CNPJs sem máscara', async () => {
-  const situacoes = await new SituacaoCadastralRepository().getAll();
-  assert.equal(situacoes.size, 3041);
-  assert.equal(situacoes.get('01000171000183'), 'ATIVA');
-  assert.deepEqual(new Set(situacoes.values()), new Set(['ATIVA', 'INAPTA', 'SUSPENSA', 'BAIXADA']));
+test('repository indexa todos os registros de um CSV conhecido sem depender do cadastro editável', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'antecipe-cadastro-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const path = join(directory, 'cadastro.csv');
+  await writeFile(path, 'DOC;SITUACAO_CADASTRAL\n11.222.333/0001-81;ATIVA\n04252011000110;BAIXADA\n00.000.000/0001-91;SUSPENSA\n');
+  const situacoes = await new SituacaoCadastralRepository(path).getAll();
+  assert.deepEqual([...situacoes], [
+    ['11222333000181', 'ATIVA'], ['04252011000110', 'BAIXADA'], ['00000000000191', 'SUSPENSA'],
+  ]);
 });
 
 test('valida situações configuradas, máscara e CNPJs ausentes ou inválidos', () => {

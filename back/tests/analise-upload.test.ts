@@ -49,7 +49,10 @@ test('motor executa os sete individuais, acumula motivos e carrega cadastro e co
     nota(7, { DATA_VENCIMENTO_ORIGINAL: '31/12/2025' }), nota(8, { DATA_VENCIMENTO_ORIGINAL: '01/07/2026' }),
     nota(9, { DATA_VENCIMENTO_ORIGINAL: '30/01/2026' })];
   const resultado = await new AnaliseService(validadores, cadastro).analisarRecebiveis(entrada);
-  assert.deepEqual(resultado[0], { linha: 2, id: '0002', status: 'APROVADO' });
+  assert.deepEqual(resultado[0], { linha: 2, id: '0002', status: 'APROVADO', precificacao: {
+    metodo: 'DESCONTO_SIMPLES', taxa_mensal_percentual: 2, base_dias: 30,
+    prazo_dias: 30, valor_nominal: 100, valor_desconto: 2, valor_liquido: 98,
+  } });
   assert.deepEqual(resultado.slice(1).map(nota => nota.barrado_por), [
     ['CNPJ_SACADO_VALIDO', 'SITUACAO_CADASTRAL_SACADO'], ['SITUACAO_CADASTRAL_SACADO'],
     ['TIPO_RECEBIVEL'], ['VALOR_MINIMO'], ['NAO_VENCIDA', 'PRAZO_MINIMO'], ['PRAZO_MAXIMO'], ['PRAZO_MINIMO'],
@@ -97,10 +100,27 @@ test('upload calcula apenas as notas enviadas e usa as alterações de configura
   };
   const primeira = await app.inject(request);
   assert.equal(primeira.statusCode, 200);
-  assert.deepEqual(primeira.json(), [{ linha: 2, id: '0002', status: 'APROVADO' }]);
+  assert.deepEqual(primeira.json(), [{ linha: 2, id: '0002', status: 'APROVADO', precificacao: {
+    metodo: 'DESCONTO_SIMPLES', taxa_mensal_percentual: 2, base_dias: 30,
+    prazo_dias: 30, valor_nominal: 100, valor_desconto: 2, valor_liquido: 98,
+  } }]);
   configuracao.validadores[0].parametros.valor_minimo = 101;
   const segunda = await app.inject(request);
   assert.equal(segunda.statusCode, 200);
   assert.deepEqual(segunda.json(), [{ linha: 2, id: '0002', status: 'BARRADO', barrado_por: ['VALOR_MINIMO'] }]);
-  assert.equal(leitura.mock.callCount(), 2);
+  configuracao.validadores[0].parametros.valor_minimo = 100;
+  configuracao.precificacao.taxa_mensal_percentual = 4;
+  configuracao.precificacao.base_dias = 15;
+  const terceira = await app.inject(request);
+  assert.equal(terceira.statusCode, 200);
+  assert.deepEqual(terceira.json()[0].precificacao, {
+    metodo: 'DESCONTO_SIMPLES', taxa_mensal_percentual: 4, base_dias: 15,
+    prazo_dias: 30, valor_nominal: 100, valor_desconto: 8, valor_liquido: 92,
+  });
+  assert.equal(leitura.mock.callCount(), 3);
+  configuracao.precificacao.taxa_mensal_percentual = 100;
+  configuracao.precificacao.base_dias = 1;
+  const semCotacaoValida = await app.inject(request);
+  assert.equal(semCotacaoValida.statusCode, 422);
+  assert.match(semCotacaoValida.json().message, /superior ao valor nominal/);
 });

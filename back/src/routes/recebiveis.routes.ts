@@ -19,7 +19,9 @@ export async function recebiveisRoutes(server: FastifyInstance) {
         + 'Aplica as regras individuais ativas e depois as concentrações por fundo. '
         + 'Usa DATA_AQUISICAO de cada nota como referência dos prazos e vencimento. '
         + 'Retorna apenas as notas enviadas, na ordem original, com todos os motivos individuais de recusa. '
-        + 'As concentrações são reavaliadas até não ocorrerem novas recusas.',
+        + 'As concentrações são reavaliadas até não ocorrerem novas recusas. '
+        + 'Notas aprovadas recebem precificacao com desconto simples entre aquisição e vencimento, '
+        + 'usando taxa mensal e base de dias da configuração.',
       response: {
         200: {
           type: 'array',
@@ -32,14 +34,31 @@ export async function recebiveisRoutes(server: FastifyInstance) {
               id: { type: 'string', description: 'NU_DOCUMENTO, preservando zeros à esquerda.' },
               status: { type: 'string', enum: ['APROVADO', 'BARRADO'] },
               barrado_por: { type: 'array', items: { type: 'string' }, description: 'Códigos das regras que recusaram a nota.' },
+              precificacao: {
+                type: 'object',
+                description: 'Presente somente para notas aprovadas após todas as validações. Valores monetários em reais.',
+                required: ['metodo', 'taxa_mensal_percentual', 'base_dias', 'prazo_dias', 'valor_nominal', 'valor_desconto', 'valor_liquido'],
+                properties: {
+                  metodo: { type: 'string', enum: ['DESCONTO_SIMPLES'] },
+                  taxa_mensal_percentual: { type: 'number', minimum: 0 },
+                  base_dias: { type: 'integer', minimum: 1 },
+                  prazo_dias: { type: 'integer', minimum: 0, description: 'Vencimento menos aquisição em dias civis.' },
+                  valor_nominal: { type: 'number', minimum: 0 },
+                  valor_desconto: { type: 'number', minimum: 0 },
+                  valor_liquido: { type: 'number', minimum: 0 },
+                },
+              },
             },
           },
           examples: [[
-            { linha: 2, id: '725714', status: 'APROVADO' },
+            { linha: 2, id: '000123', status: 'APROVADO', precificacao: {
+              metodo: 'DESCONTO_SIMPLES', taxa_mensal_percentual: 2, base_dias: 30,
+              prazo_dias: 60, valor_nominal: 1000, valor_desconto: 40, valor_liquido: 960,
+            } },
             { linha: 3, id: '1-759172', status: 'BARRADO', barrado_por: ['CONCENTRACAO_MAXIMA_SACADO'] },
           ]],
         },
-        400: errorSchema, 413: errorSchema, 415: errorSchema, 500: errorSchema,
+        400: errorSchema, 413: errorSchema, 415: errorSchema, 422: errorSchema, 500: errorSchema,
       },
     },
   }, uploadRecebiveis);

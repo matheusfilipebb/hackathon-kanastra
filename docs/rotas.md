@@ -58,7 +58,20 @@ Retorna um resultado para cada nota enviada, preservando a ordem do CSV. Exemplo
 
 ```json
 [
-  { "linha": 2, "id": "725714", "status": "APROVADO" },
+  {
+    "linha": 2,
+    "id": "000123",
+    "status": "APROVADO",
+    "precificacao": {
+      "metodo": "DESCONTO_SIMPLES",
+      "taxa_mensal_percentual": 2,
+      "base_dias": 30,
+      "prazo_dias": 60,
+      "valor_nominal": 1000,
+      "valor_desconto": 40,
+      "valor_liquido": 960
+    }
+  },
   {
     "linha": 3,
     "id": "1-759172",
@@ -74,8 +87,23 @@ Retorna um resultado para cada nota enviada, preservando a ordem do CSV. Exemplo
 | `id` | Número da nota (`NU_DOCUMENTO`), como string. Não é um identificador global único. |
 | `status` | `APROVADO` ou `BARRADO`. |
 | `barrado_por` | Lista dos códigos de recusa, presente nas notas barradas. |
+| `precificacao` | Cotação sugerida, presente somente nas notas aprovadas após todas as regras. |
 
-**Comportamento atual:** o controller faz o parser e delega ao motor. As regras individuais ativas acumulam todos os motivos de recusa; depois, as regras de concentração trabalham apenas sobre notas ainda aprovadas e são reavaliadas até não ocorrerem novas recusas. A referência para vencimento e prazo é `DATA_AQUISICAO` de cada nota, para análise histórica do estoque. As notas do lote são a base de cálculo de cada fundo; o backend ainda não adiciona um estoque externo. O endpoint não lê o gabarito e ainda não inclui preço líquido calculado.
+**Comportamento atual:** o controller faz o parser e delega ao motor. As regras individuais ativas acumulam todos os motivos de recusa; depois, as regras de concentração trabalham apenas sobre notas ainda aprovadas e são reavaliadas até não ocorrerem novas recusas. A referência para vencimento e prazo é `DATA_AQUISICAO` de cada nota, para análise histórica do estoque. As notas do lote são a base de cálculo de cada fundo; o backend ainda não adiciona um estoque externo. O endpoint não lê o gabarito. Depois das regras coletivas, as notas ainda aprovadas recebem a precificação sugerida.
+
+### Precificação das aprovadas
+
+O método atual é `DESCONTO_SIMPLES`, com taxa e base lidas de `precificacao` na configuração. A mesma configuração é usada na análise e na cotação da requisição inteira.
+
+```text
+prazo_dias = DATA_VENCIMENTO_ORIGINAL - DATA_AQUISICAO
+desconto = valor_nominal × (taxa_mensal_percentual / 100) × (prazo_dias / base_dias)
+valor_liquido = valor_nominal - desconto
+```
+
+Os valores monetários são retornados como números em reais. O cálculo interno usa centavos inteiros e a taxa como fração; o desconto é arredondado uma única vez para o centavo mais próximo, com meio centavo arredondado para cima. O líquido é o nominal menos o desconto arredondado. Um título de R$ 1.000 por 60 dias, a 2% com base de 30 dias, tem desconto de R$ 40 e líquido de R$ 960.
+
+Notas barradas não têm o campo `precificacao`. Datas inválidas, vencimento anterior à aquisição, método não suportado ou parâmetros que gerem desconto superior ao valor nominal impedem uma cotação válida e retornam `422`, sem apresentar um valor líquido negativo.
 
 ### Erros
 
@@ -84,6 +112,7 @@ Retorna um resultado para cada nota enviada, preservando a ordem do CSV. Exemplo
 | 400 | Arquivo ausente, campo diferente de `file`, CSV vazio, cabeçalho incorreto, campos inconsistentes, aspas inválidas ou codificação inválida. |
 | 413 | Arquivo maior que 50 MiB. |
 | 415 | Requisição sem `multipart/form-data`. |
+| 422 | Não foi possível calcular uma precificação válida para uma nota aprovada ou a configuração de preços é inválida. |
 | 500 | Falha interna, como erro ao ler a configuração ou o cadastro de situações. |
 
 Exemplo de erro retornado pelo controller:

@@ -13,6 +13,7 @@ import { validarConcentracaoMaximaSacado } from '../validators/coletivos/concent
 import type { RecebivelAnalisado, RecebivelAnalisadoCedente } from '../types/recebivel-analisado.js';
 import { validarConcentracaoMaximaCedente } from '../validators/coletivos/concentracao-maxima-cedente.validator.js';
 import type { RecebivelCsv, ResultadoAnalise } from '../types/recebivel-csv.js';
+import { PrecificacaoService } from './precificacao.service.js';
 
 function obterParametroNumerico(
   validadores: ConfiguracaoValidadores['validadores'],
@@ -84,11 +85,14 @@ export class AnaliseService {
     return analisados.map(nota => ({
       linha: nota.linha, id: nota.NU_DOCUMENTO, status: nota.status,
       ...(nota.barrado_por?.length ? { barrado_por: nota.barrado_por } : {}),
+      ...(nota.status === 'APROVADO' ? { precificacao: execucao.precificarRecebivel(nota) } : {}),
     }));
   }
 
   async iniciarExecucao() {
-    const validadores = await this.recuperarValidadores();
+    const configuracao = await this.validadoresService.get();
+    const validadores = configuracao.validadores;
+    const precificacao = new PrecificacaoService(configuracao.precificacao);
     const concentracaoSacado = obterParametroNumerico(validadores, 'CONCENTRACAO_MAXIMA_SACADO', 'percentual_maximo');
     const concentracaoCedente = obterParametroNumerico(validadores, 'CONCENTRACAO_MAXIMA_CEDENTE', 'percentual_maximo');
     if (concentracaoSacado !== undefined && validadores.find(regra =>
@@ -118,6 +122,7 @@ export class AnaliseService {
     const aceitas: string[] = Array.isArray(situacoesAceitas) ? [...situacoesAceitas] : [];
     return {
       validadores,
+      precificarRecebivel: (nota: RecebivelCsv) => precificacao.calcular(nota),
       validarSituacaoCadastralSacado: (documento: unknown): boolean =>
         !regra || validarSituacaoCadastralSacado(documento, situacoes, aceitas),
       validarTipoRecebivel: (tipo: unknown): boolean =>

@@ -126,3 +126,11 @@ A configuração é capturada uma vez por execução. A regra está inicialmente
 ## Comparação com o resultado esperado
 
 Execute `npm run comparar -- ../../estoque_antecipe.csv ../docs/comparacao-resultado-esperado.json` dentro de `back/`. O script analisa o CSV de forma independente, compara status e conjuntos de motivos e grava o relatório JSON, sem alterar o gabarito nem a configuração. Veja o [relatório de comparação](../docs/comparacao-resultado-esperado.md) para os resultados e as divergências identificadas.
+
+## Precificação sugerida
+
+Depois das validações individuais e coletivas, somente as notas aprovadas recebem `precificacao` na resposta do upload. O `PrecificacaoService` usa o método `DESCONTO_SIMPLES`, a `taxa_mensal_percentual` e a `base_dias` da mesma configuração carregada para a execução.
+
+O desconto é `valor_nominal × (taxa_mensal_percentual / 100) × (dias / base_dias)`, sendo `dias` a diferença entre vencimento e aquisição. O desconto é arredondado uma vez para centavos (meio centavo sobe); o valor líquido é o nominal menos esse desconto. A resposta informa método, taxa, base, prazo, nominal, desconto e líquido, em reais.
+
+Exemplo: nominal de R$ 1.000, prazo de 60 dias, taxa de 2% e base de 30 dias resultam em desconto de R$ 40 e líquido de R$ 960. Taxa ou prazo zero mantêm o nominal. Dados ou configuração que impeçam uma cotação válida retornam `422`; não são gerados preços líquidos negativos. O contrato completo está em [docs/rotas.md](../docs/rotas.md).

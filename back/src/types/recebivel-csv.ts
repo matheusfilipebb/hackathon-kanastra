@@ -1,3 +1,5 @@
+import type { PrecificacaoSugerida } from './precificacao.js';
+
 export interface RecebivelCsv {
   linha: number;
   NOME_FUNDO: string;
@@ -18,4 +20,5 @@ export interface ResultadoAnalise {
   id: string;
   status: 'APROVADO' | 'BARRADO';
   barrado_por?: string[];
+  precificacao?: PrecificacaoSugerida;
 }

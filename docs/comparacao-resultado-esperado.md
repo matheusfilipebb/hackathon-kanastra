@@ -84,4 +84,4 @@ Esse resultado observado corresponde à exclusão integral desses grupos, enquan
 - O controller retorna somente as notas do CSV recebido, mantendo sua ordem e linhas físicas, inclusive quando há campos multilinha ou linhas vazias.
 - Os dois validadores coletivos são reaplicados até não haver novas recusas, para que uma retirada por cedente não deixe um sacado acima do limite.
 - Cada fundo é calculado sobre o lote enviado; ainda não há consulta a uma carteira externa.
-- A resposta contém `linha`, `id`, `status` e `barrado_por` quando aplicável. Precificação e valor líquido continuam fora desta etapa.
+- A comparação considera `linha`, `id`, `status` e `barrado_por` quando aplicável. A precificação foi adicionada posteriormente à resposta das notas aprovadas e não é comparada, pois o gabarito não contém preços.
