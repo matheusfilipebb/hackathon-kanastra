@@ -1,0 +1,182 @@
+# Rotas da API Antecipe
+
+URL local padrão: `http://localhost:3000`. A porta pode ser alterada pela variável `PORT`.
+
+Para iniciar, execute na raiz do repositório:
+
+```bash
+cd back
+npm install
+npm run dev
+```
+
+Os exemplos de comandos abaixo consideram o terminal dentro de `back/`.
+
+## Resumo
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| POST | `/recebiveis/upload` | Receber e interpretar o CSV; retornar o gabarito fixo. |
+| GET | `/validadores` | Consultar a configuração atual. |
+| PUT | `/validadores` | Validar e substituir a configuração completa. |
+| GET | `/docs` | Abrir a documentação interativa Swagger. |
+| GET | `/docs/json` | Obter a especificação OpenAPI em JSON. |
+| GET | `/docs/yaml` | Obter a especificação OpenAPI em YAML. |
+
+## POST /recebiveis/upload
+
+Envie um formulário `multipart/form-data` com um arquivo no campo `file`. O limite por arquivo é de **50 MiB**.
+
+O CSV deve estar em UTF-8, separado por `;`, com valores decimais usando vírgula e datas `dd/mm/aaaa`. São aceitos BOM, quebras LF/CRLF, campos entre aspas e aspas escapadas. O cabeçalho deve conter estas 11 colunas, sem colunas adicionais:
+
+```csv
+NOME_FUNDO;DOC_FUNDO;NOME_CEDENTE;DOC_CEDENTE;NOME_SACADO;DOC_SACADO;NU_DOCUMENTO;TIPO_RECEBIVEL;VALOR_NOMINAL;DATA_VENCIMENTO_ORIGINAL;DATA_AQUISICAO
+```
+
+```bash
+curl http://localhost:3000/recebiveis/upload \
+  -F 'file=@../../estoque_antecipe.csv'
+```
+
+No navegador, use `FormData` para enviar o arquivo. O cliente define o `Content-Type` com o boundary automaticamente.
+
+```javascript
+const form = new FormData();
+form.append('file', arquivoCsv);
+const response = await fetch('http://localhost:3000/recebiveis/upload', {
+  method: 'POST',
+  body: form,
+});
+const resultado = await response.json();
+```
+
+### Resposta 200
+
+Retorna o array completo de `back/data/resultado_esperado_100k.json`. Trecho ilustrativo:
+
+```json
+[
+  { "linha": 2, "id": "725714", "status": "APROVADO" },
+  {
+    "linha": 3,
+    "id": "1-759172",
+    "status": "BARRADO",
+    "barrado_por": ["CONCENTRACAO_MAXIMA_SACADO"]
+  }
+]
+```
+
+| Campo | Significado |
+| --- | --- |
+| `linha` | Linha do CSV de referência; o cabeçalho ocupa a linha 1. |
+| `id` | Número da nota (`NU_DOCUMENTO`), como string. Não é um identificador global único. |
+| `status` | `APROVADO` ou `BARRADO`. |
+| `barrado_por` | Lista dos códigos de recusa, presente nas notas barradas. |
+
+**Comportamento atual:** o controller faz o parser e verifica cabeçalho, presença de notas e quantidade de campos. Os valores são preservados como strings. Os validadores individuais e o agrupamento por fundo já existem no service, mas ainda não são executados por esta rota. A resposta é o gabarito completo, independentemente do conteúdo ou tamanho do lote enviado; ainda não inclui preço líquido calculado.
+
+### Erros
+
+| Status | Causa |
+| --- | --- |
+| 400 | Arquivo ausente, campo diferente de `file`, CSV vazio, cabeçalho incorreto, campos inconsistentes, aspas inválidas ou codificação inválida. |
+| 413 | Arquivo maior que 50 MiB. |
+| 415 | Requisição sem `multipart/form-data`. |
+| 500 | Falha interna, como erro ao ler o JSON de resultado esperado. |
+
+Exemplo de erro retornado pelo controller:
+
+```json
+{ "message": "Envie um arquivo CSV no campo file." }
+```
+
+## GET /validadores
+
+Retorna a configuração atual de `back/data/validadores_antecipe.json`. Inclui fundo, regras ativas e inativas e parâmetros de precificação. O arquivo é lido a cada consulta.
+
+```bash
+curl http://localhost:3000/validadores
+```
+
+### Resposta 200 e formato da configuração
+
+Este também é o formato esperado pelo PUT:
+
+```json
+{
+  "fundo": {
+    "nome": "ANTECIPE FIDC",
+    "cnpj": "92.234.400/0001-80"
+  },
+  "validadores": [
+    { "codigo": "CNPJ_SACADO_VALIDO", "ativo": true, "parametros": {} },
+    { "codigo": "SITUACAO_CADASTRAL_SACADO", "ativo": true, "parametros": { "situacoes_aceitas": ["ATIVA"] } },
+    { "codigo": "TIPO_RECEBIVEL", "ativo": true, "parametros": { "tipos_aceitos": ["Duplicata", "Duplicata de Serviço"] } },
+    { "codigo": "VALOR_MINIMO", "ativo": true, "parametros": { "valor_minimo": 100 } },
+    { "codigo": "NAO_VENCIDA", "ativo": true, "parametros": {} },
+    { "codigo": "PRAZO_MAXIMO", "ativo": true, "parametros": { "prazo_maximo_dias": 180 } },
+    { "codigo": "CONCENTRACAO_MAXIMA_SACADO", "ativo": true, "parametros": { "percentual_maximo": 10, "agrupamento": "RAIZ_CNPJ" } },
+    { "codigo": "PRAZO_MINIMO", "ativo": false, "parametros": { "prazo_minimo_dias": 30 } },
+    { "codigo": "CONCENTRACAO_MAXIMA_CEDENTE", "ativo": false, "parametros": { "percentual_maximo": 8 } }
+  ],
+  "precificacao": {
+    "metodo": "DESCONTO_SIMPLES",
+    "taxa_mensal_percentual": 2,
+    "base_dias": 30
+  }
+}
+```
+
+Erros de leitura ou JSON inválido no arquivo retornam `500`.
+
+## PUT /validadores
+
+Recebe `Content-Type: application/json` e o objeto completo descrito acima. **Substitui toda a configuração**, incluindo a lista de validadores. Para alterar apenas uma regra, consulte a configuração, modifique o campo desejado e envie o objeto completo.
+
+```bash
+curl -X PUT http://localhost:3000/validadores \
+  -H 'Content-Type: application/json' \
+  --data-binary @data/validadores_antecipe.json
+```
+
+### Validações do PUT
+
+| Campo ou regra | Restrição |
+| --- | --- |
+| Estrutura | `fundo`, `validadores` e `precificacao` são obrigatórios. |
+| Validador | Exige `codigo`, `ativo` e `parametros`; códigos não podem se repetir. |
+| `VALOR_MINIMO.valor_minimo` | Número finito maior ou igual a zero. |
+| `TIPO_RECEBIVEL.tipos_aceitos` | Lista não vazia contendo apenas `Duplicata`, `Duplicata de Serviço`, `Cheque`, `CCB` ou `Nota Comercial`. |
+| `PRAZO_MAXIMO.prazo_maximo_dias` | Inteiro maior ou igual a zero. |
+| `PRAZO_MINIMO.prazo_minimo_dias` | Inteiro maior ou igual a zero. |
+| Concentração de sacado ou cedente | `percentual_maximo` deve ser um número finito maior ou igual a zero. |
+| `precificacao.metodo` | `DESCONTO_SIMPLES`. |
+| `precificacao.taxa_mensal_percentual` | Número finito maior ou igual a zero. |
+| `precificacao.base_dias` | Inteiro maior que zero. |
+
+As verificações de parâmetros do PUT também se aplicam às regras inativas. Os demais parâmetros ainda não têm validação específica no service de configuração.
+
+### Respostas
+
+| Status | Resultado |
+| --- | --- |
+| 200 | Configuração salva; o corpo contém o objeto completo atualizado. |
+| 400 | JSON malformado, estrutura inválida, código duplicado ou parâmetro inválido. |
+| 415 | Tipo de conteúdo não suportado. |
+| 500 | Falha ao persistir o arquivo. |
+
+Exemplo de erro de parâmetro:
+
+```json
+{ "message": "VALOR_MINIMO.valor_minimo deve ser um número maior ou igual a zero." }
+```
+
+A configuração só é gravada depois das validações. O repository escreve em um arquivo temporário e faz a substituição atômica de `data/validadores_antecipe.json`. Requisições rejeitadas por validação preservam o arquivo anterior. As alterações persistem após reiniciar o servidor.
+
+Erros gerados pelo Fastify podem incluir, além de `message`, os campos `statusCode`, `error` e `code`. A atualização da configuração não altera o gabarito retornado pelo upload nesta etapa.
+
+## Swagger e OpenAPI
+
+Acesse `/docs` para visualizar os contratos e testar as requisições. O PUT executado pelo Swagger também salva as alterações no arquivo de configuração.
+
+A especificação pode ser exportada por `/docs/json` ou `/docs/yaml`. Para instruções de execução e detalhes do motor de análise, consulte o [README do backend](../back/README.md).

@@ -8,6 +8,7 @@ import { validarValorMinimo } from '../validators/individuais/valor-minimo.valid
 import { validarNaoVencida } from '../validators/individuais/nao-vencida.validator.js';
 import { validarPrazoMaximo } from '../validators/individuais/prazo-maximo.validator.js';
 import { validarPrazoMinimo } from '../validators/individuais/prazo-minimo.validator.js';
+import { agruparPorFundo } from '../utils/agrupar-por-fundo.js';
 
 function obterParametroNumerico(
   validadores: ConfiguracaoValidadores['validadores'],
@@ -38,6 +39,10 @@ export class AnaliseService {
 
   validarCnpjSacado(documento: unknown): boolean {
     return validarCnpjSacado(documento);
+  }
+
+  agruparPorFundo<T extends { DOC_FUNDO: string }>(recebiveis: readonly T[]): Map<string, T[]> {
+    return agruparPorFundo(recebiveis);
   }
 
   async iniciarExecucao() {

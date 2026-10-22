@@ -21,6 +21,8 @@ Encerre o servidor com `Ctrl+C`.
 
 ## Documentação da API
 
+Consulte o [guia das rotas em Markdown](../docs/rotas.md) para exemplos de requisição, resposta e erros.
+
 Com o servidor iniciado, acesse [Swagger UI](http://localhost:3000/docs) para consultar e testar as rotas. A especificação OpenAPI está disponível em `/docs/json` e `/docs/yaml`.
 
 | Método | Rota | Descrição |
@@ -96,3 +98,7 @@ Datas devem ser strings `dd/mm/aaaa` válidas. A referência é obrigatória na 
 Todos os limites são inclusivos, vêm da configuração e ficam fixos durante cada execução. Regras inativas ou ausentes retornam `true`. Dados inválidos retornam `false` quando a regra está ativa, e limites configurados inválidos impedem iniciar a execução. O upload permanece com a resposta de gabarito fixo.
 
 O histórico de prompts está em `prompt/`.
+
+## Agrupamento para análise coletiva
+
+`analiseService.agruparPorFundo(recebiveis)` retorna um `Map`, com o valor de `DOC_FUNDO` como chave e a lista de notas do fundo como valor. Passe as notas na ordem do CSV: essa ordem é mantida dentro de cada grupo e os fundos aparecem na ordem de sua primeira ocorrência. O agrupamento preserva os objetos e todos os campos, sem alterar a entrada nem remover notas repetidas. Nesta etapa, ainda não calcula concentração.
