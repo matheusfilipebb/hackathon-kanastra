@@ -1,5 +1,6 @@
 import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
+import ValidatorsModal from './ValidatorsModal'
 import antecipaLogo from './assets/antecipe-logo-branco-sem-fundo.svg'
 
 type Invoice = { id: string; sacado: string; cnpj: string; valor: number; vencimento: string; tipo: string; situacao: string; cedente: string }
@@ -55,6 +56,7 @@ function evaluate(invoices: Invoice[]): Result[] {
 }
 
 function App() {
+  const [validatorsOpen, setValidatorsOpen] = useState(false)
   const [results, setResults] = useState<Result[]>([])
   const [fileName, setFileName] = useState('')
   const [isDragging, setIsDragging] = useState(false)
@@ -112,7 +114,8 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="topbar"><img className="brand-logo" src={antecipaLogo} alt="antecipa" /><div className="topbar-right"><span className={`live-dot ${apiOnline ? '' : 'offline'}`} /> {apiOnline ? 'API conectada' : 'API offline'}</div></header>
+      {validatorsOpen && <ValidatorsModal apiUrl={API_URL} onClose={() => setValidatorsOpen(false)} />}
+      <header className="topbar"><img className="brand-logo" src={antecipaLogo} alt="antecipa" /><div className="topbar-right"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar validadores</button><span className={`live-dot ${apiOnline ? '' : 'offline'}`} /> {apiOnline ? 'API conectada' : 'API offline'}</div></header>
       <main className="main-content">
         <section className="intro"><div><p className="eyebrow">OPERAÇÃO · ANÁLISE DE RECEBÍVEIS</p><h1>Validação de notas fiscais</h1><p className="subtitle">Envie seu lote e deixe os validadores fazerem o trabalho pesado.</p></div></section>
         <section className="workspace-grid"><div className="left-column">

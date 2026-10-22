@@ -89,3 +89,28 @@ body { background: var(--light-gray); }
 .status.rejected span { background: var(--tech-green-2); }
 .empty-state { color: #668077 !important; }
 footer { border-color: rgba(25,60,50,.14); color: #668077; }
+
+.validators-open { border: 1px solid #ffffff70; background: transparent; color: white; padding: 10px 14px; border-radius: 999px; font-size: 12px; letter-spacing: normal; }
+.validators-open:hover { background: #ffffff18; }
+.validators-modal { width: min(760px, calc(100% - 28px)); max-height: 90dvh; padding: 28px; border: 0; border-radius: 24px; color: var(--kanastra-green); background: white; box-shadow: 0 24px 80px #0004; }
+.validators-modal::backdrop { background: #10271fd0; }
+.validators-modal form > p { font-size: 14px; line-height: 1.6; }
+.validators-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.validators-heading h2 { margin: 0; font-size: 23px; }
+.modal-close { border: 0; background: transparent; color: inherit; font-size: 30px; }
+.validators-fields { border: 0; padding: 0; margin: 24px 0; min-width: 0; }
+.validators-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.validators-grid label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.validators-grid input,.validators-grid select { width: 100%; min-width: 0; padding: 11px; border: 1px solid #193c3240; border-radius: 9px; font: inherit; background: white; color: inherit; }
+.validator-editor { padding: 18px 0; border-bottom: 1px solid #193c3220; }
+.validator-toggle { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 13px; }
+.validator-toggle input { accent-color: var(--tech-green-2); width: 18px; height: 18px; }
+.validator-toggle > span:first-of-type { flex: 1; min-width: 0; }
+.validator-toggle small { display: block; margin-top: 5px; overflow-wrap: anywhere; font-size: 10px; color: #668077; }
+.validator-editor .validators-grid:not(:empty) { margin-top: 16px; }
+.validators-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; }
+.validators-actions button,.validators-modal .error-message button { padding: 11px 16px; border: 1px solid #193c3240; border-radius: 10px; background: white; color: inherit; }
+.validators-actions .validators-save { background: var(--tech-green-2); color: white; border-color: transparent; }
+.validators-modal button:disabled { opacity: .5; cursor: wait; }
+.validators-success { background: #2daa821a; padding: 12px; border-radius: 9px; color: var(--tech-green-2); }
+@media (max-width: 600px) { .validators-grid { grid-template-columns: 1fr; } .validators-modal { padding: 20px; } .topbar-right { flex-wrap: wrap; justify-content: flex-end; gap: 8px; font-size: 10px; } .validators-open { padding: 7px 10px; font-size: 11px; } }
