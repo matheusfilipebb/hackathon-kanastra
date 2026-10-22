@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/reasonmodal.tsx","./src/validatorsmodal.tsx","./src/main.tsx","./src/vite-env.d.ts"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/Dashboard.tsx","./src/ReasonModal.tsx","./src/ValidatorsModal.tsx","./src/listing.ts","./src/main.tsx","./src/vite-env.d.ts"],"version":"5.9.3"}
