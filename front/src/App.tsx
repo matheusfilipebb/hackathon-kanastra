@@ -69,7 +69,6 @@ function App() {
   const [validatorsOpen, setValidatorsOpen] = useState(false)
   const [selectedReason, setSelectedReason] = useState<Result | null>(null)
   const [results, setResults] = useState<Result[]>([])
-  const [fileName, setFileName] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [filter, setFilter] = useState<'todas' | 'aprovadas' | 'reprovadas'>('todas')
   const [currentPage, setCurrentPage] = useState(1)
@@ -93,7 +92,7 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [cedenteFilter, sacadoFilter])
   useEffect(() => { setCurrentPage(1) }, [filter, results, selectedFund, search])
-  const processJson = async (text: string, name: string) => {
+  const processJson = async (text: string) => {
     try {
       const parsed = JSON.parse(text)
       if (!Array.isArray(parsed) && parsed?.fundo && Array.isArray(parsed?.validadores) && parsed?.precificacao) {
@@ -101,11 +100,11 @@ function App() {
         const response = await fetch(`${API_URL}/validadores`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) })
         const responseBody = await response.json().catch(() => null)
         if (!response.ok) throw new Error(responseBody?.message ?? `A API respondeu com status ${response.status}.`)
-        setFileName(name); setCurrentPage(1); setApiOnline(true); setError(''); return
+        setCurrentPage(1); setApiOnline(true); setError(''); return
       }
       const rows = Array.isArray(parsed) ? parsed : parsed.notas_fiscais ?? parsed.notas ?? parsed.data ?? []
       if (!Array.isArray(rows) || rows.length === 0) throw new Error('JSON inválido. Envie uma lista de notas ou a configuração completa dos validadores.')
-      setSelectedFund(''); setCedenteFilter(''); setSacadoFilter(''); setResults(evaluate(rows.map((item, index) => normalizeInvoice(item, index)))); setFileName(name); setCurrentPage(1); setError('')
+      setSelectedFund(''); setCedenteFilter(''); setSacadoFilter(''); setResults(evaluate(rows.map((item, index) => normalizeInvoice(item, index)))); setCurrentPage(1); setError('')
     } catch (fileError) { setError(fileError instanceof Error ? fileError.message : 'Não foi possível ler este arquivo.') } finally { setIsLoading(false) }
   }
   const processCsv = async (file: File) => {
@@ -119,10 +118,10 @@ function App() {
       const apiRows = await response.json() as ApiResult[]
       setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('')
       setResults(apiRows.map((item) => { const local = localRows[item.linha - 2] ?? localRows.find((row) => row.id === item.id); return { ...(local ?? { fundo: 'Fundo não informado', fundoDocumento: '', id: item.id, sacado: 'Dados retornados pela API', cnpj: '', valor: 0, vencimento: '', tipo: '', situacao: '', cedente: '' }), aprovado: item.status === 'APROVADO', motivos: item.barrado_por ?? [], precificacao: item.precificacao } }))
-      setFileName(file.name); setCurrentPage(1); setApiOnline(true)
+      setCurrentPage(1); setApiOnline(true)
     } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.'); setApiOnline(false) } finally { setIsLoading(false) }
   }
-  const handleFile = (file?: File) => { if (!file) return; if (!/\.(csv|json)$/i.test(file.name)) { setError('Envie um arquivo nos formatos CSV ou JSON.'); return }; if (file.name.toLowerCase().endsWith('.json')) { const reader = new FileReader(); reader.onload = () => void processJson(String(reader.result), file.name); reader.readAsText(file); return }; void processCsv(file) }
+  const handleFile = (file?: File) => { if (!file) return; if (!/\.(csv|json)$/i.test(file.name)) { setError('Envie um arquivo nos formatos CSV ou JSON.'); return }; if (file.name.toLowerCase().endsWith('.json')) { const reader = new FileReader(); reader.onload = () => void processJson(String(reader.result)); reader.readAsText(file); return }; void processCsv(file) }
   const searchIndex = useMemo(() => indexInvoices(results), [results])
   const listing = useMemo(() => queryInvoices(searchIndex, selectedFund, search.cedente, search.sacado), [searchIndex, selectedFund, search])
   const listResults = listing.rows
@@ -136,7 +135,6 @@ function App() {
   const onDrop = (event: DragEvent<HTMLDivElement>) => { event.preventDefault(); setIsDragging(false); handleFile(event.dataTransfer.files[0]) }
   const resetAnalysis = () => {
     setResults([])
-    setFileName('')
     setError('')
     setSelectedFund('')
     setCedenteFilter('')
