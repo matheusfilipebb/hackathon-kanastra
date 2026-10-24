@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { registerResponseCompression } from './plugins-compression.js';
 import { registerDocumentation } from './docs/swagger.js';
 import { recebiveisRoutes } from './routes/recebiveis.routes.js';
 import { validadoresRoutes } from './routes/validadores.routes.js';
@@ -22,6 +23,7 @@ try {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
   });
+  await registerResponseCompression(server);
   await registerDocumentation(server);
   await server.register(recebiveisRoutes);
   await server.register(validadoresRoutes);

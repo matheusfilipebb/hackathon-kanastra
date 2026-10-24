@@ -99,7 +99,7 @@ Datas devem ser strings `dd/mm/aaaa` válidas. Nas funções individuais, a refe
 
 Todos os limites são inclusivos, vêm da configuração e ficam fixos durante cada execução. Regras inativas ou ausentes retornam `true`. Dados inválidos retornam `false` quando a regra está ativa, e limites configurados inválidos impedem iniciar a execução. No upload, todos os motivos individuais são acumulados antes de aplicar as regras coletivas.
 
-O histórico de prompts está em `prompt/`.
+O histórico de prompts está reunido em [HISTORICO_PROMPTS.md](../HISTORICO_PROMPTS.md).
 
 ## Agrupamento para análise coletiva
 
@@ -134,3 +134,8 @@ Depois das validações individuais e coletivas, somente as notas aprovadas rece
 O desconto é `valor_nominal × (taxa_mensal_percentual / 100) × (dias / base_dias)`, sendo `dias` a diferença entre vencimento e aquisição. O desconto é arredondado uma vez para centavos (meio centavo sobe); o valor líquido é o nominal menos esse desconto. A resposta informa método, taxa, base, prazo, nominal, desconto e líquido, em reais.
 
 Exemplo: nominal de R$ 1.000, prazo de 60 dias, taxa de 2% e base de 30 dias resultam em desconto de R$ 40 e líquido de R$ 960. Taxa ou prazo zero mantêm o nominal. Dados ou configuração que impeçam uma cotação válida retornam `422`; não são gerados preços líquidos negativos. O contrato completo está em [docs/rotas.md](../docs/rotas.md).
+
+
+## Respostas compactadas
+
+As respostas JSON acima de 1 KiB são enviadas com gzip quando o cliente aceita essa compressão (`Accept-Encoding: gzip`). O navegador descompacta a resposta automaticamente, mantendo o formato JSON e os campos usados pela interface. No Docker, o Nginx repassa a resposta compactada da API. Essa mudança reduz o volume transferido; o tempo de análise das regras continua dependendo do lote.

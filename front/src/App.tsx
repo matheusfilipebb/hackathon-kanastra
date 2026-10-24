@@ -1,6 +1,7 @@
 import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import Dashboard from './Dashboard'
+import { requestApi } from './api'
 import { indexInvoices, queryInvoices } from './listing'
 import ValidatorsModal from './ValidatorsModal'
 import InvoiceModal from './InvoiceModal'
@@ -61,7 +62,7 @@ function evaluate(invoices: Invoice[]): Result[] {
 }
 
 function App() {
-  const [activeView, setActiveView] = useState<'dashboard' | 'notas'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'notas'>('notas')
   const [chartsExpanded, setChartsExpanded] = useState(true)
   const [search, setSearch] = useState({ cedente: '', sacado: '' })
   const [selectedFund, setSelectedFund] = useState('')
@@ -78,15 +79,16 @@ function App() {
   const [apiLoading, setApiLoading] = useState(true)
   const [apiOnline, setApiOnline] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const validatorsLoaded = useRef(false)
+  const processingFile = useRef(false)
   useEffect(() => {
-    if (validatorsLoaded.current) return
-    validatorsLoaded.current = true
-    fetch(`${API_URL}/validadores`)
-      .then((response) => { if (!response.ok) throw new Error('API indisponível'); return response.json() })
-      .then(() => setApiOnline(true))
-      .catch(() => setApiOnline(false))
-      .finally(() => setApiLoading(false))
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 10000)
+    let active = true
+    requestApi(`${API_URL}/validadores`, { signal: controller.signal }, online => { if (active) setApiOnline(online) })
+      .then(response => { if (active) setApiOnline(response.ok) })
+      .catch(() => { if (active) setApiOnline(false) })
+      .finally(() => { window.clearTimeout(timeout); if (active) setApiLoading(false) })
+    return () => { active = false; controller.abort(); window.clearTimeout(timeout) }
   }, [])
   useEffect(() => {
     const timer = window.setTimeout(() => setSearch({ cedente: cedenteFilter, sacado: sacadoFilter }), 200)
@@ -98,7 +100,7 @@ function App() {
       const parsed = JSON.parse(text)
       if (!Array.isArray(parsed) && parsed?.fundo && Array.isArray(parsed?.validadores) && parsed?.precificacao) {
         setIsLoading(true)
-        const response = await fetch(`${API_URL}/validadores`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) })
+        const response = await requestApi(`${API_URL}/validadores`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) }, setApiOnline)
         const responseBody = await response.json().catch(() => null)
         if (!response.ok) throw new Error(responseBody?.message ?? `A API respondeu com status ${response.status}.`)
         setCurrentPage(1); setApiOnline(true); setError(''); return
@@ -106,7 +108,7 @@ function App() {
       const rows = Array.isArray(parsed) ? parsed : parsed.notas_fiscais ?? parsed.notas ?? parsed.data ?? []
       if (!Array.isArray(rows) || rows.length === 0) throw new Error('JSON inválido. Envie uma lista de notas ou a configuração completa dos validadores.')
       setSelectedFund(''); setCedenteFilter(''); setSacadoFilter(''); setResults(evaluate(rows.map((item, index) => normalizeInvoice(item, index)))); setCurrentPage(1); setError('')
-    } catch (fileError) { setError(fileError instanceof Error ? fileError.message : 'Não foi possível ler este arquivo.') } finally { setIsLoading(false) }
+    } catch (fileError) { setError(fileError instanceof Error ? fileError.message : 'Não foi possível ler este arquivo.') } finally { setIsLoading(false); processingFile.current = false }
   }
   const processCsv = async (file: File) => {
     setIsLoading(true); setError('')
@@ -114,15 +116,30 @@ function App() {
       const csvText = await file.text(); validateApiCsv(csvText)
       const localRows = parseCsv(csvText).map((item, index) => normalizeInvoice(item, index))
       const formData = new FormData(); formData.append('file', file)
-      const response = await fetch(`${API_URL}/recebiveis/upload`, { method: 'POST', body: formData })
+      const response = await requestApi(`${API_URL}/recebiveis/upload`, { method: 'POST', body: formData }, setApiOnline)
       if (!response.ok) { const detail = await response.json().catch(() => null); throw new Error(detail?.message ?? `A API respondeu com status ${response.status}.`) }
       const apiRows = await response.json() as ApiResult[]
+      if (!Array.isArray(apiRows)) throw new Error('A API retornou um resultado inválido. Tente enviar o arquivo novamente.')
       setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('')
       setResults(apiRows.map((item) => { const local = localRows[item.linha - 2] ?? localRows.find((row) => row.id === item.id); return { ...(local ?? { fundo: 'Fundo não informado', fundoDocumento: '', id: item.id, sacado: 'Dados retornados pela API', cnpj: '', valor: 0, vencimento: '', tipo: '', situacao: '', cedente: '' }), linha: item.linha, aprovado: item.status === 'APROVADO', motivos: item.barrado_por ?? [], precificacao: item.precificacao } }))
       setCurrentPage(1); setApiOnline(true)
-    } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.'); setApiOnline(false) } finally { setIsLoading(false) }
+    } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.') } finally { setIsLoading(false); processingFile.current = false }
   }
-  const handleFile = (file?: File) => { if (!file) return; if (!/\.(csv|json)$/i.test(file.name)) { setError('Envie um arquivo nos formatos CSV ou JSON.'); return }; if (file.name.toLowerCase().endsWith('.json')) { const reader = new FileReader(); reader.onload = () => void processJson(String(reader.result)); reader.readAsText(file); return }; void processCsv(file) }
+  const handleFile = (file?: File) => {
+    if (!file || processingFile.current) return
+    if (!/\.(csv|json)$/i.test(file.name)) { setError('Envie um arquivo nos formatos CSV ou JSON.'); return }
+    if (file.size > 50 * 1024 * 1024) { setError('O arquivo deve ter no máximo 50 MiB.'); return }
+    processingFile.current = true
+    if (file.name.toLowerCase().endsWith('.json')) {
+      const reader = new FileReader()
+      reader.onload = () => void processJson(String(reader.result))
+      reader.onerror = () => { processingFile.current = false; setError('Não foi possível ler o arquivo. Tente selecioná-lo novamente.') }
+      reader.readAsText(file)
+      return
+    }
+    void processCsv(file)
+  }
+
   const searchIndex = useMemo(() => indexInvoices(results), [results])
   const listing = useMemo(() => queryInvoices(searchIndex, selectedFund, search.cedente, search.sacado), [searchIndex, selectedFund, search])
   const listResults = listing.rows
@@ -132,7 +149,7 @@ function App() {
   const totalPages = Math.max(1, Math.ceil(matchingResults.length / PAGE_SIZE))
   const filteredResults = useMemo(() => matchingResults.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [matchingResults, currentPage])
   const { approved, rejected, totalValue } = listing
-  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => handleFile(event.target.files?.[0])
+  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; event.target.value = ''; handleFile(file) }
   const onDrop = (event: DragEvent<HTMLDivElement>) => { event.preventDefault(); setIsDragging(false); handleFile(event.dataTransfer.files[0]) }
   const resetAnalysis = () => {
     setResults([])
@@ -144,7 +161,7 @@ function App() {
     setFilter('todas')
     setCurrentPage(1)
     setChartsExpanded(true)
-    setActiveView('dashboard')
+    setActiveView('notas')
     if (inputRef.current) inputRef.current.value = ''
   }
 
@@ -160,8 +177,8 @@ function App() {
           {!isLoading && results.length > 0 && <>
             <div className="analysis-view-heading"><div><p className="eyebrow">ANÁLISE CONCLUÍDA</p><h1>Resultado da análise</h1><p>Veja o resumo nos gráficos ou consulte cada nota fiscal.</p></div><button type="button" className="new-analysis-button" onClick={resetAnalysis}>Analisar novo CSV</button></div>
             <nav className="analysis-navigation" aria-label="Visualização dos resultados">
-              <button type="button" aria-pressed={activeView === 'dashboard'} aria-controls="dashboard-view" onClick={() => setActiveView('dashboard')}><strong>Dashboard</strong><span>Gráficos e comparativo entre fundos</span></button>
               <button type="button" aria-pressed={activeView === 'notas'} aria-controls="invoices-view" onClick={() => setActiveView('notas')}><strong>Notas fiscais <small>{results.length.toLocaleString('pt-BR')}</small></strong><span>Filtros, valores e motivos de recusa</span></button>
+              <button type="button" aria-pressed={activeView === 'dashboard'} aria-controls="dashboard-view" onClick={() => setActiveView('dashboard')}><strong>Dashboard</strong><span>Gráficos e comparativo entre fundos</span></button>
             </nav>
           </>}
           {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <><div className="dashboard-view-actions"><p>Use o filtro dos gráficos para explorar um fundo.</p><button type="button" onClick={() => setActiveView('notas')}>Consultar notas deste fundo →</button></div><div className="charts-section"><button type="button" className="charts-toggle" aria-expanded={chartsExpanded} aria-controls="analysis-charts" onClick={() => setChartsExpanded(expanded => !expanded)}><span>{chartsExpanded ? 'Recolher Dashboard ▴' : 'Expandir Dashboard ▾'}</span></button><div id="analysis-charts">{chartsExpanded && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} />}</div></div></>}</section>}

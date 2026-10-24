@@ -104,7 +104,7 @@ npm run build
 ## Estrutura do projeto
 
 ```text
-back/       API, regras de análise, dados e prompts
+back/       API, regras de análise e dados
 front/      Interface web em React e Vite
 docs/       Documentação de rotas e comparação com o resultado esperado
 ```
@@ -205,3 +205,8 @@ docker compose -f compose.yaml -f compose.tunnel.yaml up -d
 Se o domínio responder com erro 502, confira se a rota aponta para `http://front:80` e se os serviços estão saudáveis com `docker compose -f compose.yaml -f compose.tunnel.yaml ps`. O token precisa estar preenchido para executar os comandos que incluem o arquivo do túnel.
 
 Documentação oficial: [configurar Cloudflare Tunnel](https://developers.cloudflare.com/tunnel/get-started/) e [parâmetros do conector](https://developers.cloudflare.com/tunnel/reference/run-parameters/).
+
+
+## Histórico de prompts
+
+Os pedidos usados durante o projeto estão reunidos em [HISTORICO_PROMPTS.md](HISTORICO_PROMPTS.md), incluindo público-alvo, identidade visual, backend, Docker e Cloudflare Tunnel.
