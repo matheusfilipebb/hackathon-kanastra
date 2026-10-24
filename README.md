@@ -4,6 +4,17 @@ Acesse a aplicação: [antecipe.alvtn.site](https://antecipe.alvtn.site/).
 
 Aplicação para analisar recebíveis e calcular a precificação sugerida para as notas aprovadas. O projeto contém um frontend em React/Vite e uma API em Node.js, TypeScript e Fastify.
 
+## Telas
+
+### Página inicial
+![pagina-inicial](./docs/pagina-inicial.jpeg)
+
+### Página tabela de notas
+![pagina-notas](./docs/pagina-notas.jpeg)
+
+### Página gráfico
+![pagina-grafico](./docs/pagina-grafico.jpeg)
+
 ## Como rodar
 
 Escolha uma das opções:
