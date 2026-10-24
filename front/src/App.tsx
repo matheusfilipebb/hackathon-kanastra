@@ -1,7 +1,9 @@
 import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import Dashboard from './Dashboard'
-import { requestApi } from './api'
+import { requestApi, uploadCsv } from './api'
+import type { UploadProgress } from './api'
+import UploadLoading from './UploadLoading'
 import { indexInvoices, queryInvoices } from './listing'
 import ValidatorsModal from './ValidatorsModal'
 import InvoiceModal from './InvoiceModal'
@@ -75,6 +77,10 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null)
+  const [uploadStartedAt, setUploadStartedAt] = useState(0)
+  const [estimatedProcessingMs, setEstimatedProcessingMs] = useState<number | null>(null)
+  const lastAnalysis = useRef<{ bytes: number; ms: number } | null>(null)
   const [apiLoading, setApiLoading] = useState(true)
   const [apiOnline, setApiOnline] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -110,19 +116,29 @@ function App() {
     } catch (fileError) { setError(fileError instanceof Error ? fileError.message : 'Não foi possível ler este arquivo.') } finally { setIsLoading(false); processingFile.current = false }
   }
   const processCsv = async (file: File) => {
+    const startedAt = Date.now()
+    setUploadStartedAt(startedAt)
+    setUploadProgress({ stage: 'preparing', loaded: 0, total: 0, stageStartedAt: startedAt })
+    setEstimatedProcessingMs(lastAnalysis.current ? Math.max(1000, lastAnalysis.current.ms * file.size / lastAnalysis.current.bytes) : Math.max(2000, 10000 * file.size / (20 * 1024 * 1024)))
     setIsLoading(true); setError('')
     try {
       const csvText = await file.text(); validateApiCsv(csvText)
       const localRows = parseCsv(csvText).map((item, index) => normalizeInvoice(item, index))
-      const formData = new FormData(); formData.append('file', file)
-      const response = await requestApi(`${API_URL}/recebiveis/upload`, { method: 'POST', body: formData }, setApiOnline)
+      let analysisStartedAt = 0
+      let analysisMs = 0
+      const response = await uploadCsv(`${API_URL}/recebiveis/upload`, file, progress => {
+        if (progress.stage === 'processing') analysisStartedAt = progress.stageStartedAt
+        if (progress.stage === 'receiving' && analysisStartedAt) analysisMs = progress.stageStartedAt - analysisStartedAt
+        setUploadProgress(progress)
+      }, setApiOnline)
       if (!response.ok) { const detail = await response.json().catch(() => null); throw new Error(detail?.message ?? `A API respondeu com status ${response.status}.`) }
       const apiRows = await response.json() as ApiResult[]
       if (!Array.isArray(apiRows)) throw new Error('A API retornou um resultado inválido. Tente enviar o arquivo novamente.')
       setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('')
       setResults(apiRows.map((item) => { const local = localRows[item.linha - 2] ?? localRows.find((row) => row.id === item.id); return { ...(local ?? { fundo: 'Fundo não informado', fundoDocumento: '', id: item.id, sacado: 'Dados retornados pela API', cnpj: '', valor: 0, vencimento: '', tipo: '', situacao: '', cedente: '' }), linha: item.linha, aprovado: item.status === 'APROVADO', motivos: item.barrado_por ?? [], precificacao: item.precificacao } }))
+      if (analysisMs > 0 && file.size > 0) lastAnalysis.current = { bytes: file.size, ms: analysisMs }
       setCurrentPage(1); setApiOnline(true)
-    } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.') } finally { setIsLoading(false); processingFile.current = false }
+    } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.') } finally { setIsLoading(false); setUploadProgress(null); processingFile.current = false }
   }
   const handleFile = (file?: File) => {
     if (!file || processingFile.current) return
@@ -180,7 +196,7 @@ function App() {
             </nav>
           </>}
           {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} />}</section>}
-          {isLoading ? <div className="loading-state" role="status" aria-live="polite"><span className="loading-spinner" /><div><strong>Processando seu arquivo</strong><p>Estamos analisando as notas fiscais. Isso pode levar alguns instantes.</p></div></div> : results.length > 0 && <section id="invoices-view" aria-label="Listagem de notas fiscais" hidden={activeView !== 'notas'}>{activeView === 'notas' && <div className="results-section"><div className="results-header"><div><h2>Notas processadas</h2><p className="invoice-table-hint">Clique em uma nota para ver os dados completos.</p></div></div><div className="listing-filters" aria-label="Filtros da listagem">
+          {isLoading ? (uploadProgress ? <UploadLoading progress={uploadProgress} startedAt={uploadStartedAt} estimatedProcessingMs={estimatedProcessingMs} /> : <div className="loading-state" role="status"><span className="loading-spinner" /><strong>Salvando configuração...</strong></div>) : results.length > 0 && <section id="invoices-view" aria-label="Listagem de notas fiscais" hidden={activeView !== 'notas'}>{activeView === 'notas' && <div className="results-section"><div className="results-header"><div><h2>Notas processadas</h2><p className="invoice-table-hint">Clique em uma nota para ver os dados completos.</p></div></div><div className="listing-filters" aria-label="Filtros da listagem">
             <label>Fundo<select value={selectedFund} onChange={event => setSelectedFund(event.target.value)}><option value="">Todos os fundos</option>{fundOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
             <label>Cedente<input type="search" placeholder="Buscar pelo nome do cedente" value={cedenteFilter} onChange={event => setCedenteFilter(event.target.value)} /></label>
             <label>Sacado<input type="search" placeholder="Buscar pelo nome ou CNPJ" value={sacadoFilter} onChange={event => setSacadoFilter(event.target.value)} /></label>

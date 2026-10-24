@@ -232,3 +232,36 @@ footer { border-color: rgba(25,60,50,.14); color: #668077; }
 .invoice-reasons p { font-size: 14px; line-height: 1.6; margin: 0 0 4px; }
 .invoice-reasons small { color: #668077; font-size: 11px; overflow-wrap: anywhere; }
 @media (max-width: 600px) { .invoice-modal { padding: 20px; } .invoice-details-grid { grid-template-columns: 1fr; } }
+
+/* Readable text sizes shared by the list, controls and dialogs. */
+.table-wrap td,.listing-filters label,.listing-filters button,.validators-grid label { font-size: 14px; line-height: 1.5; }
+.table-wrap th { font-size: 13px; }
+.table-wrap td small,.invoice-details-grid dt,.invoice-reasons small,.analysis-navigation button span,.search-feedback,.pagination { font-size: 13px; line-height: 1.5; }
+.status,.pagination button,.dashboard-legend li,.fund-bars-legend { font-size: 13px; }
+.listing-filters input,.listing-filters select,.validators-grid input,.validators-grid select { font-size: 16px; }
+.fund-axis-label,.fund-column-value { font-size: 13px; }
+.fund-axis-document { font-size: 11px; }
+.upload-progress-card { margin-top: 24px; padding: 32px; background: white; border-radius: 24px; box-shadow: 0 12px 34px #193c320f; }
+.upload-progress-heading { display: flex; align-items: center; gap: 20px; }
+.upload-progress-heading h2 { margin: 0; font-size: clamp(20px, 3vw, 26px); line-height: 1.4; }
+.upload-progress-heading .eyebrow { margin: 0 0 8px; font-size: 12px; }
+.upload-steps { list-style: none; display: flex; justify-content: space-between; gap: 12px; padding: 0; margin: 28px 0; }
+.upload-steps li { display: flex; align-items: center; gap: 8px; color: #668077; font-size: 14px; }
+.upload-steps li span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #193c320d; }
+.upload-steps li[aria-current] { color: #14735a; font-weight: 600; }
+.upload-steps li[aria-current] span { color: white; background: #14735a; }
+.upload-progress-label { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+.upload-progress-label > span { color: #668077; }
+.upload-progress-bar { display: block; width: 100%; height: 14px; border: 0; border-radius: 999px; overflow: hidden; accent-color: #2daa82; background: #193c3210; }
+.upload-progress-bar::-webkit-progress-bar { background: #193c3210; border-radius: 999px; }
+.upload-progress-bar::-webkit-progress-value { background: #2daa82; border-radius: 999px; }
+.upload-progress-bar::-moz-progress-bar { background: #2daa82; }
+.upload-progress-bar:indeterminate { background: linear-gradient(90deg, #193c3210 25%, #2daa82 50%, #193c3210 75%); background-size: 200% 100%; animation: upload-pending 1.8s linear infinite; }
+.upload-progress-bar:indeterminate::-webkit-progress-bar { background: transparent; }
+.upload-time-estimate { font-size: 14px; margin: 16px 0 8px; }
+.upload-progress-note { color: #668077; font-size: 13px; line-height: 1.6; margin: 0; }
+@keyframes upload-pending { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .upload-progress-bar:indeterminate { animation: none; } }
+@media (max-width: 600px) { .upload-progress-card { padding: 24px 16px; } .upload-progress-label { flex-direction: column; gap: 4px; } .upload-steps { flex-wrap: wrap; } .upload-steps li { flex: 1 1 40%; } }
+.topbar-right,.metrics span,.metrics small,.validator-toggle small,.dashboard-legend small,.validators-open,.upload-actions .validators-open { font-size: 13px; }
+.tabs button,.validators-actions button { font-size: 14px; }
