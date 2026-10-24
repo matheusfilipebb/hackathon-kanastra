@@ -180,6 +180,11 @@ footer { border-color: rgba(25,60,50,.14); color: #668077; }
 .fund-bar-series + .fund-bar-series { margin-top: 10px; }
 .dashboard-bar-charts .dashboard-bars > li + li { margin-top: 24px; padding-top: 20px; border-top: 1px solid #193c3220; }
 
+/* Keep analysis graphics on the same Kanastra visual system as the listing. */
+.dashboard { margin-top: 0; padding: 0 28px 28px; background: var(--white); border-radius: 0; box-shadow: none; color: var(--kanastra-green); }
+.dashboard-header { padding-top: 4px; }.dashboard-header h2 { font: 400 22px 'Unbounded', sans-serif; letter-spacing: -1px; color: var(--kanastra-green); }.dashboard-header p,.dashboard-note { color: #668077; }.dashboard-header select { border-color: rgba(25,60,50,.2); border-radius: 16px; color: var(--kanastra-green); background: var(--light-gray); }
+.dashboard-charts { gap: 16px; }.dashboard-chart { border-color: rgba(25,60,50,.14); border-radius: 24px; padding: 22px; background: var(--white); }.dashboard-chart h3,.fund-comparison-heading h3 { color: var(--kanastra-green); font-family: 'Unbounded', sans-serif; font-weight: 400; letter-spacing: -.5px; }.pie-total { fill: var(--kanastra-green); font-family: 'Unbounded', sans-serif; font-weight: 400; }.pie-caption,.dashboard-legend small { fill: #668077; color: #668077; }.dashboard-legend li { border-color: rgba(25,60,50,.1); }.dashboard-swatch,.fund-bars-legend i { border-radius: 999px; }.fund-comparison-heading { border-top: 1px solid rgba(25,60,50,.12); padding-top: 24px; }.fund-comparison-heading p { color: #668077; }.fund-columns { border-radius: 24px; background: var(--light-gray); }.fund-columns-scroll { scrollbar-color: var(--tech-green-2) rgba(25,60,50,.08); }.fund-axis-label,.fund-column-value { fill: var(--kanastra-green); }.fund-axis-document { fill: #668077; }.dashboard-bar-track { background: rgba(25,60,50,.08); }.dashboard-bar-track > div { background: var(--tech-green-3) !important; }
+
 .fund-columns { margin-top: 20px; }
 .fund-columns-scroll { overflow-x: auto; padding-top: 16px; }
 .fund-columns-scroll svg { display: block; }
@@ -188,8 +193,10 @@ footer { border-color: rgba(25,60,50,.14); color: #668077; }
 .fund-column-value { fill: #193c32; font-size: 11px; font-weight: 600; }
 .fund-columns rect:hover { opacity: .75; }
 
-.charts-section { margin-top: 36px; }
-.charts-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding: 18px 24px; border: 1px solid #193c3220; border-radius: 16px; background: white; color: #193c32; text-align: left; font-weight: 600; }
+.charts-section { margin-top: 36px; padding-top: 0; border-radius: 32px 32px 0 0; background: var(--white); box-shadow: 0 10px 28px rgba(25,60,50,.05); }
+.charts-toggle { display: flex; align-items: center; justify-content: flex-end; gap: 16px; width: 100%; padding: 18px 28px; border: 0; border-radius: 32px 32px 0 0; background: var(--white); color: #193c32; text-align: right; font-weight: 600; }
 .charts-toggle span:last-child { font-size: 12px; white-space: nowrap; color: #14735a; }
-.charts-section .dashboard { margin-top: 12px; }
+.charts-section .dashboard { margin: 0; border-radius: 0; box-shadow: none; }
+.results-section { margin-top: 0; padding: 28px; border-radius: 0 0 32px 32px; background: var(--white); box-shadow: 0 10px 28px rgba(25,60,50,.05); }
+.results-section .results-header { padding-top: 0; }
 .search-feedback { font-size: 12px; color: #668077; min-height: 18px; }

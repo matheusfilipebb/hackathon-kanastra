@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react'
 
 type Row = { fundo: string; fundoDocumento: string; aprovado: boolean; motivos: string[] }
 type Slice = { label: string; value: number; color: string }
-const colors = ['#193C32', '#2DAA82', '#D48542', '#527CA3', '#9B638F', '#C1A036', '#638B80', '#BD6262', '#7671AA']
+const colors = ['#193C32', '#2DAA82', '#14735A', '#1E5546', '#638B80', '#C35A50', '#2DAA82', '#A7473F', '#527CA3']
 const number = new Intl.NumberFormat('pt-BR')
 const percent = (value: number, total: number) => `${(total ? value / total * 100 : 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
 const reasonLabels: Record<string, string> = {
@@ -40,7 +40,7 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
   const width = Math.max(650, chartLeft + funds.length * groupWidth + 20)
   const plotWidth = width - chartLeft - 20
   return <article className="dashboard-chart fund-columns"><h3>Notas aceitas e barradas por fundo</h3>
-    <div className="fund-bars-legend"><span><i style={{ background: '#2DAA82' }} />Aceitas</span><span><i style={{ background: '#D48542' }} />Barradas</span></div>
+    <div className="fund-bars-legend"><span><i style={{ background: '#2DAA82' }} />Aceitas</span><span><i style={{ background: '#C35A50' }} />Barradas</span></div>
     <p className="dashboard-note">Quantidade de notas · passe o mouse sobre as colunas para ver os percentuais.</p>
     {funds.length ? <div className="fund-columns-scroll" tabIndex={0} role="region" aria-label="Comparativo entre fundos, com rolagem horizontal">
       <svg width={width} height="380" viewBox={`0 0 ${width} 380`} role="img" aria-label={`Comparativo entre fundos. ${funds.map(fund => `${fund.name} ${fund.document}: ${number.format(fund.approved)} aceitas e ${number.format(fund.rejected)} barradas`).join('; ')}`}>
@@ -53,9 +53,9 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
           const center = chartLeft + (index + .5) * plotWidth / funds.length
           const total = fund.approved + fund.rejected
           return <g key={fund.key}>
-            {[{ label: 'Aceitas', value: fund.approved, color: '#2DAA82', x: center - 33 }, { label: 'Barradas', value: fund.rejected, color: '#D48542', x: center + 3 }].map(status => {
+            {[{ label: 'Aceitas', value: fund.approved, color: '#2DAA82', x: center - 33 }, { label: 'Barradas', value: fund.rejected, color: '#C35A50', x: center + 3 }].map(status => {
               const height = status.value / maximum * chartHeight
-              return <g key={status.label}><rect x={status.x} y={baseline - height} width="30" height={height} rx="3" fill={status.color}><title>{`${fund.name} · ${fund.document} — ${status.label}: ${number.format(status.value)} (${percent(status.value, total)})`}</title></rect><text x={status.x + 15} y={baseline - height - 8} textAnchor="middle" className="fund-column-value">{number.format(status.value)}</text></g>
+              return <g key={status.label}><rect x={status.x} y={baseline - height} width="30" height={height} rx="8" fill={status.color}><title>{`${fund.name} · ${fund.document} — ${status.label}: ${number.format(status.value)} (${percent(status.value, total)})`}</title></rect><text x={status.x + 15} y={baseline - height - 8} textAnchor="middle" className="fund-column-value">{number.format(status.value)}</text></g>
             })}
             <text x={center} y={baseline + 24} textAnchor="middle" className="fund-axis-label"><title>{`${fund.name} · ${fund.document}`}</title>{fund.name.length > 17 ? `${fund.name.slice(0, 16)}…` : fund.name}</text>
             <text x={center} y={baseline + 43} textAnchor="middle" className="fund-axis-document">{fund.document}</text>
@@ -101,7 +101,7 @@ function Dashboard({ rows, selectedFund, onFundChange }: { rows: Row[]; selected
 
   return <section className="dashboard" aria-labelledby="dashboard-title">
     <div className="dashboard-header"><div><p className="eyebrow">VISÃO GERAL</p><h2 id="dashboard-title">Dashboard da análise</h2><p>Percentuais calculados pela quantidade de notas.</p></div><label>Filtrar por fundo<select value={selectedFund} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label></div>
-    <div className="dashboard-charts"><Pie title="Resultado da análise" empty="Nenhuma nota para este fundo." slices={[{ label: 'Aceitas', value: summary.approved, color: '#2DAA82' }, { label: 'Barradas', value: summary.rejected, color: '#D48542' }]} /><Pie title="Motivos de bloqueio" empty="Nenhuma nota barrada neste fundo." slices={summary.reasons} /></div>
+    <div className="dashboard-charts"><Pie title="Resultado da análise" empty="Nenhuma nota para este fundo." slices={[{ label: 'Aceitas', value: summary.approved, color: '#2DAA82' }, { label: 'Barradas', value: summary.rejected, color: '#C35A50' }]} /><Pie title="Motivos de bloqueio" empty="Nenhuma nota barrada neste fundo." slices={summary.reasons} /></div>
     <div className="fund-comparison-heading"><h3>Comparativo entre fundos</h3><p>Exibe todos os fundos do arquivo, independentemente do filtro selecionado.</p></div>
     <FundColumns funds={fundComparison} />
     <p className="dashboard-note">Uma nota pode ter mais de um motivo de bloqueio. A pizza de motivos mostra a participação de cada motivo no total de ocorrências.</p>
