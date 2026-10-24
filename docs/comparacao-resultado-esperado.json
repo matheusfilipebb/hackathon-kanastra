@@ -1,0 +1,400 @@
+{
+  "referencia_datas": "DATA_AQUISICAO de cada nota",
+  "duracao_analise_ms": 957,
+  "linhas_csv": 100554,
+  "resultados_calculados": 100554,
+  "resultados_esperados": 100554,
+  "identificacoes_iguais": 100554,
+  "status_iguais": 81984,
+  "percentual_status_iguais": 81.5323,
+  "resultados_iguais_incluindo_motivos": 77080,
+  "status_calculado": {
+    "APROVADO": 69195,
+    "BARRADO": 31359
+  },
+  "status_esperado": {
+    "APROVADO": 85215,
+    "BARRADO": 15339
+  },
+  "por_regra": {
+    "SITUACAO_CADASTRAL_SACADO": {
+      "calculado": 22999,
+      "esperado": 2317,
+      "apenas_calculado": 22074,
+      "apenas_esperado": 1392
+    },
+    "CONCENTRACAO_MAXIMA_SACADO": {
+      "calculado": 8,
+      "esperado": 3305,
+      "apenas_calculado": 8,
+      "apenas_esperado": 3305
+    },
+    "TIPO_RECEBIVEL": {
+      "calculado": 9842,
+      "esperado": 9842,
+      "apenas_calculado": 0,
+      "apenas_esperado": 0
+    },
+    "VALOR_MINIMO": {
+      "calculado": 34,
+      "esperado": 34,
+      "apenas_calculado": 0,
+      "apenas_esperado": 0
+    },
+    "PRAZO_MAXIMO": {
+      "calculado": 4671,
+      "esperado": 4671,
+      "apenas_calculado": 0,
+      "apenas_esperado": 0
+    }
+  },
+  "diagnostico_cadastro": {
+    "notas_sem_cnpj_no_cadastro": 22222,
+    "recusadas_no_gabarito_mas_ativas_no_csv": 1392
+  },
+  "concentracao_isolada_usando_rejeicoes_individuais_do_gabarito": {
+    "percentual_maximo": 10,
+    "calculado": 1087,
+    "esperado": 3305,
+    "apenas_calculado": 0,
+    "apenas_esperado": 2218
+  },
+  "amostras_divergentes": [
+    {
+      "calculado": {
+        "linha": 3,
+        "id": "1-759172",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 3,
+        "id": "1-759172",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 8,
+        "id": "526204",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 8,
+        "id": "526204",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 11,
+        "id": "1-618406",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 11,
+        "id": "1-618406",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 17,
+        "id": "000568995",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 17,
+        "id": "000568995",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 28,
+        "id": "1-421571",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 28,
+        "id": "1-421571",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 36,
+        "id": "000569032",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 36,
+        "id": "000569032",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 38,
+        "id": "1-618430",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 38,
+        "id": "1-618430",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 41,
+        "id": "725788",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 41,
+        "id": "725788",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 51,
+        "id": "000351197",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 51,
+        "id": "000351197",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 57,
+        "id": "1-759207",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 57,
+        "id": "1-759207",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 70,
+        "id": "731205",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 70,
+        "id": "731205",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 71,
+        "id": "1-618475",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 71,
+        "id": "1-618475",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 80,
+        "id": "1-618495",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 80,
+        "id": "1-618495",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 90,
+        "id": "856040",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 90,
+        "id": "856040",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 98,
+        "id": "1-759270",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 98,
+        "id": "1-759270",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 99,
+        "id": "1-30325",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 99,
+        "id": "1-30325",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 102,
+        "id": "1-421587",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 102,
+        "id": "1-421587",
+        "status": "APROVADO"
+      }
+    },
+    {
+      "calculado": {
+        "linha": 104,
+        "id": "725843",
+        "status": "APROVADO"
+      },
+      "esperado": {
+        "linha": 104,
+        "id": "725843",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 106,
+        "id": "640587",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 106,
+        "id": "640587",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    },
+    {
+      "calculado": {
+        "linha": 109,
+        "id": "000770165",
+        "status": "BARRADO",
+        "barrado_por": [
+          "SITUACAO_CADASTRAL_SACADO"
+        ]
+      },
+      "esperado": {
+        "linha": 109,
+        "id": "000770165",
+        "status": "BARRADO",
+        "barrado_por": [
+          "CONCENTRACAO_MAXIMA_SACADO"
+        ]
+      }
+    }
+  ]
+}
