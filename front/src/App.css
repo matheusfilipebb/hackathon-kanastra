@@ -42,3 +42,49 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Kanastra x Antecipe visual system. */
+:root { --kanastra-green: #193C32; --tech-green-1: #1E5546; --tech-green-2: #14735A; --tech-green-3: #2DAA82; --light-gray: #F3F2F3; --white: #FFFFFF; }
+body { background: var(--light-gray); }
+.app-shell { background: var(--light-gray); color: var(--kanastra-green); }
+.topbar { height: 80px; border: 0; background: var(--kanastra-green); }
+.brand-logo { height: 52px; width: auto; }
+.topbar-right { color: rgba(255,255,255,.78); font-family: 'Inter', sans-serif; letter-spacing: .08em; }
+.live-dot,.pulse { background: var(--tech-green-3); box-shadow: 0 0 0 4px rgba(45,170,130,.18); }
+.main-content { max-width: 1380px; padding-top: 64px; }
+.intro h1 { color: var(--kanastra-green); font-family: 'Unbounded', sans-serif; font-size: clamp(30px, 4vw, 54px); font-weight: 300; letter-spacing: -2px; }
+.eyebrow { color: var(--tech-green-2); font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: .1em; }
+.subtitle { color: var(--tech-green-1); font-size: 15px; }
+.workspace-grid { display: block; }
+.upload-card { border: 0; border-radius: 32px; background: var(--white); padding: 32px; box-shadow: 0 12px 34px rgba(25,60,50,.06); }
+.section-heading h2,.results-header h2 { color: var(--kanastra-green); font-family: 'Unbounded', sans-serif; font-weight: 400; letter-spacing: -1px; }
+.section-heading p { color: #668077; }
+.step { background: var(--tech-green-2); border-radius: 12px; }
+.format-label { border: 0; border-radius: 999px; background: rgba(45,170,130,.12); color: var(--tech-green-2); font-family: 'Inter', sans-serif; font-weight: 700; }
+.drop-zone { margin-top: 28px; min-height: 220px; border: 1.5px dashed rgba(20,115,90,.4); border-radius: 24px; background: rgba(30,85,70,.05); }
+.drop-zone.dragging,.drop-zone:hover { border-color: var(--tech-green-3); background: rgba(45,170,130,.1); }
+.upload-icon { background: rgba(45,170,130,.15); color: var(--tech-green-2); border-radius: 16px; }
+.drop-zone h3 { color: var(--kanastra-green); font-family: 'Inter', sans-serif; font-size: 16px; }
+.drop-zone p { color: #668077; }
+.link-button { color: var(--tech-green-2); }
+.file-loaded { border: 0; border-radius: 18px; background: rgba(45,170,130,.1); }
+.file-type { background: var(--tech-green-2); color: var(--white); border-radius: 10px; }
+.file-loaded strong { color: var(--kanastra-green); }
+.results-section { margin-top: 58px; }
+.processed-label { color: var(--tech-green-2); font-family: 'Inter', sans-serif; }
+.metrics { border-color: rgba(25,60,50,.2); }
+.metrics > div { border-color: rgba(25,60,50,.14); }
+.metrics span { color: #668077; font-family: 'Inter', sans-serif; }
+.metrics strong { color: var(--kanastra-green); font-family: 'Unbounded', sans-serif; font-weight: 400; }
+.metric-approved strong { color: var(--tech-green-3); }
+.metric-rejected strong { color: var(--tech-green-2); }
+.tabs button.active { border-color: var(--tech-green-3); color: var(--kanastra-green); }
+.table-wrap { border: 0; border-radius: 24px; background: var(--white); box-shadow: 0 10px 28px rgba(25,60,50,.05); }
+.table-wrap th { background: var(--tech-green-1); color: var(--white); font-family: 'Inter', sans-serif; }
+.table-wrap td { border-color: rgba(25,60,50,.1); color: var(--kanastra-green); }
+.status.approved { background: rgba(45,170,130,.15); color: var(--tech-green-2); }
+.status.approved span { background: var(--tech-green-3); }
+.status.rejected { background: rgba(20,115,90,.12); color: var(--tech-green-2); }
+.status.rejected span { background: var(--tech-green-2); }
+.empty-state { color: #668077 !important; }
+footer { border-color: rgba(25,60,50,.14); color: #668077; }
