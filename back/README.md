@@ -275,7 +275,7 @@ docker stats
 
 Sem túnel, use `docker compose logs -f back front`. A duração da API não inclui necessariamente todo o tempo de envio do navegador, pois o Nginx pode receber o arquivo antes de encaminhá-lo. Um cancelamento de rede ou TLS não demonstra, sozinho, queda do backend.
 
-O upload, as notas analisadas e o resultado são mantidos em memória. Os loops das regras executam no processo Node.js, sem workers de cálculo. Lotes grandes e requisições simultâneas podem aumentar consumo de memória, CPU e tempo de resposta. Gzip reduz o tráfego, mas não elimina o custo das regras. As concentrações podem exigir várias passagens até estabilizar.
+O upload, as notas analisadas e o resultado são mantidos em memória. Os loops das regras executam no processo Node.js, sem workers de cálculo. Lotes grandes podem aumentar consumo de memória, CPU e tempo de resposta; o endpoint limita frequência e quantidade de uploads simultâneos conforme a seção de proteção abaixo. Gzip reduz o tráfego, mas não elimina o custo das regras. As concentrações podem exigir várias passagens até estabilizar.
 
 ### Limites atuais e evolução
 
@@ -296,3 +296,27 @@ O upload, as notas analisadas e o resultado são mantidos em memória. Os loops 
 6. Se o código gerar um novo motivo de recusa, adicione também sua explicação na interface web.
 
 Os testes usam o executor do Node.js com `tsx`. Execute `npm test` e `npm run build` dentro de `back/` antes de entregar uma alteração no motor.
+
+## Proteção contra excesso de uploads
+
+`POST /recebiveis/upload` verifica os limites antes de receber e interpretar o arquivo:
+
+| Variável | Padrão | Comportamento |
+| --- | --- | --- |
+| `MAX_CONCURRENT_UPLOADS` | `2` | Máximo de uploads em recebimento ou análise ao mesmo tempo. |
+| `UPLOAD_RATE_LIMIT` | `10` | Capacidade da cota global de envios. |
+| `UPLOAD_RATE_WINDOW_SECONDS` | `60` | Tempo para repor uma cota completa. |
+
+A cota usa reposição gradual: com os valores padrão, começa com 10 permissões e repõe uma a cada 6 segundos, até o máximo de 10. Tentativas admitidas pela cota consomem uma permissão mesmo se o arquivo for inválido ou não houver vaga de análise. Nenhuma requisição excedente fica em fila na aplicação.
+
+Os limites são **globais por processo**, compartilhados por todos os usuários. Não dependem de `X-Forwarded-For` ou `CF-Connecting-IP`, evitando confiar em IPs enviados pelo cliente. Réplicas separadas mantêm cotas independentes; para uma cota compartilhada entre réplicas, é necessário um armazenamento central.
+
+Ao atingir um limite, a API retorna HTTP `429`, código `UPLOAD_RATE_LIMIT` ou `UPLOAD_CONCURRENCY_LIMIT`, mensagem para o usuário e cabeçalho `Retry-After` em segundos. O prazo de concorrência é uma sugestão de nova tentativa, não uma previsão de conclusão. Uma vaga é liberada ao concluir o handler, em erros e quando um upload incompleto é interrompido. Se o cliente sair depois de enviar o arquivo completo, a vaga continua ocupada até o handler terminar.
+
+No modo local, ajuste as variáveis em `back/.env`. No Compose, ajuste o `.env` da raiz e recrie os serviços. Os valores devem ser inteiros positivos; configuração inválida impede a inicialização. O Nginx encaminha o corpo de `/api/` sem buffering prévio para permitir rejeição antecipada pelo backend. O limite de 50 MiB por arquivo continua em vigor.
+
+```bash
+docker compose -f compose.yaml -f compose.tunnel.yaml up -d --build
+```
+
+Essa proteção não substitui autenticação nem elimina a necessidade de limitar linhas e campos ou isolar cálculos pesados em workers.

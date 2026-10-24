@@ -2,13 +2,30 @@ import multipart from '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 import { errorSchema } from '../docs/schemas.js';
 import { uploadRecebiveis } from '../controllers/recebiveis.controller.js';
+import { readUploadLimits, UploadLimitsService } from '../services/upload-limits.service.js';
+import type { UploadLimits } from '../services/upload-limits.service.js';
 
-export async function recebiveisRoutes(server: FastifyInstance) {
+export async function recebiveisRoutes(server: FastifyInstance, options: { uploadLimits?: UploadLimits } = {}) {
+  const limiter = new UploadLimitsService(options.uploadLimits ?? readUploadLimits());
+  const leases = new WeakMap<object, () => void>();
+  const release = (request: object) => { leases.get(request)?.(); leases.delete(request); };
   await server.register(multipart, {
     limits: { files: 1, fileSize: 50 * 1024 * 1024 },
   });
 
   server.post('/recebiveis/upload', {
+    onRequest: async (request, reply) => {
+      const admission = limiter.acquire();
+      if ('code' in admission) {
+        return reply.header('Retry-After', admission.retryAfter).code(429).send({ statusCode: 429, code: admission.code, message: admission.message });
+      }
+      leases.set(request, admission.release);
+      // An incomplete upload cannot start analysis; a disconnect after receiving the
+      // full body retains the slot until the handler's finally block finishes.
+      request.raw.once('aborted', () => { if (!request.raw.complete) release(request); });
+    },
+    onResponse: async request => { release(request); },
+    onError: async request => { release(request); },
     schema: {
       tags: ['Recebíveis'],
       summary: 'Enviar um CSV de recebíveis',
@@ -58,8 +75,11 @@ export async function recebiveisRoutes(server: FastifyInstance) {
             { linha: 3, id: '1-759172', status: 'BARRADO', barrado_por: ['CONCENTRACAO_MAXIMA_SACADO'] },
           ]],
         },
-        400: errorSchema, 413: errorSchema, 415: errorSchema, 422: errorSchema, 500: errorSchema,
+        400: errorSchema, 413: errorSchema, 415: errorSchema, 422: errorSchema, 429: errorSchema, 500: errorSchema,
       },
     },
-  }, uploadRecebiveis);
+  }, async (request, reply) => {
+    try { return await uploadRecebiveis(request, reply); }
+    finally { release(request); }
+  });
 }
