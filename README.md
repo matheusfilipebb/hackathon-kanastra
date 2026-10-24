@@ -50,7 +50,7 @@ cd front
 O frontend usa `VITE_API_URL` para localizar a API. Configure-a para a URL da API que está executando localmente e inicie o Vite:
 
 ```bash
-printf 'VITE_API_URL=http://localhost:3000\n' > .env.local
+cp .env.example .env
 npm run dev
 ```
 
@@ -108,3 +108,54 @@ back/       API, regras de análise, dados e prompts
 front/      Interface web em React e Vite
 docs/       Documentação de rotas e comparação com o resultado esperado
 ```
+
+## Opção: executar com Docker Compose
+
+Requer Docker com o plugin Compose. Na raiz do repositório:
+
+```bash
+docker compose up -d --build
+```
+
+- Frontend: http://localhost:8080
+- API e Swagger (na máquina onde o Docker está rodando): http://localhost:3000/docs
+
+O frontend usa `/api` e o Nginx encaminha as chamadas ao backend pela rede do Compose. Isso permite acessar a aplicação pelo endereço do servidor sem configurar o IP da API no navegador e evita CORS entre front e back. O frontend é compilado para produção; alterações no código exigem reconstruir as imagens.
+
+Para usar outras portas, sem alterar arquivos:
+
+```bash
+FRONT_PORT=8081 BACK_PORT=3001 docker compose up -d --build
+```
+
+Para consultar logs e parar os serviços:
+
+```bash
+docker compose logs -f
+docker compose down
+```
+
+Os dados de `back/data` são copiados para o volume `backend_data` na primeira execução. As alterações de validadores feitas pela interface persistem após reiniciar, reconstruir as imagens ou executar `docker compose down`. Depois da primeira execução, atualizar os arquivos de `back/data` no repositório não substitui o conteúdo do volume existente.
+
+`docker compose down -v` apaga o volume e as configurações salvas; na próxima inicialização, os dados serão novamente carregados da imagem.
+
+O modo local com `npm ci` e `npm run dev` continua disponível conforme as instruções anteriores.
+
+
+## Arquivos de ambiente
+
+Os arquivos `.env` locais não são versionados. Para configurá-los após clonar:
+
+```bash
+cp .env.example .env
+cp front/.env.example front/.env
+cp back/.env.example back/.env
+```
+
+| Arquivo | Variáveis | Uso |
+| --- | --- | --- |
+| `.env` | `FRONT_PORT=8080`, `BACK_PORT=3000` | Portas publicadas pelo Docker Compose. |
+| `front/.env` | `VITE_API_URL=http://localhost:3000` | Endereço da API usado pelo Vite no desenvolvimento local. |
+| `back/.env` | `HOST=0.0.0.0`, `PORT=3000` | Endereço e porta usados por `npm run dev` e `npm start` no backend (Node.js 22+). |
+
+No Docker, a API continua na porta interna 3000 e o frontend usa `/api` via Nginx; alterar `BACK_PORT` muda apenas a porta publicada na máquina. Os `.env` de `front` e `back` não entram nas imagens. No modo local, se alterar `PORT` em `back/.env`, ajuste também `VITE_API_URL` em `front/.env`. Reinicie os servidores após editar as variáveis. Se já existir `front/.env.local`, ele tem prioridade sobre `front/.env`.

@@ -11,7 +11,7 @@ type Pricing = { prazo_dias: number; valor_nominal: number; valor_desconto: numb
 type Result = Invoice & { aprovado: boolean; motivos: string[]; precificacao?: Pricing }
 type ApiResult = { linha: number; id: string; status: 'APROVADO' | 'BARRADO'; barrado_por?: string[]; precificacao?: Pricing }
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.100.185:3000'
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 const REQUIRED_CSV_HEADERS = ['NOME_FUNDO', 'DOC_FUNDO', 'NOME_CEDENTE', 'DOC_CEDENTE', 'NOME_SACADO', 'DOC_SACADO', 'NU_DOCUMENTO', 'TIPO_RECEBIVEL', 'VALOR_NOMINAL', 'DATA_VENCIMENTO_ORIGINAL', 'DATA_AQUISICAO']
 const PAGE_SIZE = 25
 
