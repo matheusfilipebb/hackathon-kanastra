@@ -134,6 +134,19 @@ function App() {
   const { approved, rejected, totalValue } = listing
   const onInputChange = (event: ChangeEvent<HTMLInputElement>) => handleFile(event.target.files?.[0])
   const onDrop = (event: DragEvent<HTMLDivElement>) => { event.preventDefault(); setIsDragging(false); handleFile(event.dataTransfer.files[0]) }
+  const resetAnalysis = () => {
+    setResults([])
+    setFileName('')
+    setError('')
+    setSelectedFund('')
+    setCedenteFilter('')
+    setSacadoFilter('')
+    setSearch({ cedente: '', sacado: '' })
+    setFilter('todas')
+    setCurrentPage(1)
+    setChartsExpanded(true)
+    if (inputRef.current) inputRef.current.value = ''
+  }
 
   return (
     <div className="app-shell">
@@ -141,9 +154,10 @@ function App() {
       {selectedReason && <ReasonModal invoiceId={selectedReason.id} reasons={selectedReason.motivos} onClose={() => setSelectedReason(null)} />}
       <header className="topbar"><img className="brand-logo" src={antecipaLogo} alt="antecipa" /><div className="topbar-right"><span className={`api-status ${apiLoading ? 'loading' : apiOnline ? 'online' : 'offline'}`}>{!apiLoading && <span className="live-dot" />} {apiLoading ? 'Conectando à API...' : apiOnline ? 'API conectada' : 'API offline'}</span></div></header>
       <main className="main-content">
-        <section className="intro"><div><h1>Validação de notas fiscais</h1><p className="subtitle">Envie o CSV com as Notas Fiscais e o sistema fará a análise</p></div></section>
+        {results.length === 0 && !isLoading && <section className="intro"><div><h1>Validação de notas fiscais</h1><p className="subtitle">Envie o CSV com as Notas Fiscais e o sistema fará a análise</p></div></section>}
         <section className="workspace-grid"><div className="left-column">
-          <div className="upload-card"><div className="section-heading"><div><div><h2>Adicione seu arquivo CSV</h2><p>O arquivo deve conter as notas que serão analisadas</p></div></div><div className="upload-actions"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar validadores</button></div></div><div className={`drop-zone ${isDragging ? 'dragging' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}><input ref={inputRef} type="file" accept=".csv,.json" onChange={onInputChange} hidden /><div className="upload-icon">↑</div><h3>{isLoading ? 'Analisando arquivo na API...' : 'Arraste e solte seu arquivo aqui'}</h3><p>ou <button className="link-button" type="button">selecione no computador</button></p></div>{error && <div className="error-message">{error}</div>}{fileName && <div className="file-loaded"><span className="file-type">{fileName.endsWith('.json') ? '{ }' : 'CSV'}</span><div><strong>{fileName}</strong><span>{isLoading ? 'Enviando para a API...' : 'Arquivo pronto para análise'}</span></div><span className="file-check">✓</span></div>}</div>
+          {results.length === 0 && !isLoading && <div className="upload-card"><div className="section-heading"><div><div><h2>Adicione seu arquivo CSV</h2><p>O arquivo deve conter as notas que serão analisadas</p></div></div><div className="upload-actions"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar validadores</button></div></div><div className={`drop-zone ${isDragging ? 'dragging' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}><input ref={inputRef} type="file" accept=".csv,.json" onChange={onInputChange} hidden /><div className="upload-icon">↑</div><h3>Arraste e solte seu arquivo aqui</h3><p>ou <button className="link-button" type="button">selecione no computador</button></p></div>{error && <div className="error-message">{error}</div>}</div>}
+          {!isLoading && results.length > 0 && <button type="button" className="new-analysis-button" onClick={resetAnalysis}>Analisar novo CSV</button>}
           {!isLoading && results.length > 0 && <div className="charts-section"><button type="button" className="charts-toggle" aria-expanded={chartsExpanded} aria-controls="analysis-charts" onClick={() => setChartsExpanded(expanded => !expanded)}><span>{chartsExpanded ? 'Recolher Dashboard ▴' : 'Expandir Dashboard ▾'}</span></button><div id="analysis-charts">{chartsExpanded && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} />}</div></div>}
           {isLoading ? <div className="loading-state" role="status" aria-live="polite"><span className="loading-spinner" /><div><strong>Processando seu arquivo</strong><p>Estamos analisando as notas fiscais. Isso pode levar alguns instantes.</p></div></div> : results.length > 0 && <div className="results-section"><div className="results-header"><div><h2>Notas processadas</h2></div></div><div className="listing-filters" aria-label="Filtros da listagem">
             <label>Fundo<select value={selectedFund} onChange={event => setSelectedFund(event.target.value)}><option value="">Todos os fundos</option>{fundOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>

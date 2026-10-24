@@ -91,6 +91,7 @@ body { background: var(--light-gray); }
 footer { border-color: rgba(25,60,50,.14); color: #668077; }
 
 .validators-open { border: 1px solid #ffffff70; background: transparent; color: white; padding: 10px 14px; border-radius: 999px; font-size: 12px; letter-spacing: normal; }
+.new-analysis-button { margin-bottom: 36px; padding: 13px 20px; border: 0; border-radius: 999px; background: var(--tech-green-2); color: var(--white); font: 600 14px 'Inter', sans-serif; cursor: pointer; box-shadow: 0 8px 20px rgba(20,115,90,.18); }.new-analysis-button:hover { background: var(--tech-green-1); }
 .validators-open:hover { background: #ffffff18; }
 .validators-modal { width: min(760px, calc(100% - 28px)); max-height: 90dvh; overflow: hidden; padding: 28px; border: 0; border-radius: 24px; color: var(--kanastra-green); background: white; box-shadow: 0 24px 80px #0004; }
 .validators-modal > form { max-height: calc(90dvh - 56px); overflow-y: auto; padding-right: 14px; scrollbar-gutter: stable; }
