@@ -20,7 +20,13 @@ services:
     build: ./front
     restart: unless-stopped
     ports:
-      - "${FRONT_PORT:-8080}:80"
+      - "${FRONT_HOST:-0.0.0.0}:${FRONT_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
     depends_on:
       back:
         condition: service_healthy

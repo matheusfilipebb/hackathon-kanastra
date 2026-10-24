@@ -159,3 +159,49 @@ cp back/.env.example back/.env
 | `back/.env` | `HOST=0.0.0.0`, `PORT=3000` | Endereço e porta usados por `npm run dev` e `npm start` no backend (Node.js 22+). |
 
 No Docker, a API continua na porta interna 3000 e o frontend usa `/api` via Nginx; alterar `BACK_PORT` muda apenas a porta publicada na máquina. Os `.env` de `front` e `back` não entram nas imagens. No modo local, se alterar `PORT` em `back/.env`, ajuste também `VITE_API_URL` em `front/.env`. Reinicie os servidores após editar as variáveis. Se já existir `front/.env.local`, ele tem prioridade sobre `front/.env`.
+
+
+## Opção: publicar com Cloudflare Tunnel
+
+O arquivo `compose.tunnel.yaml` adiciona um conector `cloudflared` à rede da aplicação. O modo local continua funcionando com apenas `compose.yaml`.
+
+1. No painel Cloudflare, crie um túnel do tipo **Cloudflared**, gerenciado remotamente, e copie o token mostrado na opção Docker.
+2. No `.env` da raiz, configure:
+
+   ```dotenv
+   CLOUDFLARE_TUNNEL_TOKEN=cole_seu_token_aqui
+   FRONT_HOST=127.0.0.1
+   ```
+
+   O token fica somente no backend do conector e não é enviado ao navegador. Não versione o `.env` nem compartilhe a saída de `docker compose config`, que pode conter o token interpolado.
+
+3. Configure no túnel uma rota de aplicação publicada para seu domínio/subdomínio, com serviço do tipo **HTTP** e URL **`front:80`** (equivalente a `http://front:80`). O conector roda dentro do Docker: `localhost:8080` não é o endereço do frontend nesse container.
+4. Inicie na raiz do projeto:
+
+   ```bash
+   docker compose -f compose.yaml -f compose.tunnel.yaml up -d --build
+   ```
+
+5. Acesse `https://seu-subdominio.seu-dominio.com`. O mesmo endereço atende o frontend e `/api`; não altere `VITE_API_URL` para seu domínio, pois a imagem já usa `/api`.
+
+O túnel estabelece conexões de saída; não é necessário abrir portas no roteador. Com `FRONT_HOST=127.0.0.1`, o frontend continua acessível em `http://localhost:8080` na máquina e pelo túnel. O backend permanece publicado somente em localhost.
+
+A aplicação permite alterar validadores sem autenticação própria. Para restringir quem pode acessá-la, configure uma aplicação Cloudflare Access para o hostname publicado, incluindo os caminhos `/api/*`.
+
+Para consultar o conector ou encerrar a execução:
+
+```bash
+docker compose -f compose.yaml -f compose.tunnel.yaml logs -f cloudflared
+docker compose -f compose.yaml -f compose.tunnel.yaml down
+```
+
+Para atualizar o conector:
+
+```bash
+docker compose -f compose.yaml -f compose.tunnel.yaml pull cloudflared
+docker compose -f compose.yaml -f compose.tunnel.yaml up -d
+```
+
+Se o domínio responder com erro 502, confira se a rota aponta para `http://front:80` e se os serviços estão saudáveis com `docker compose -f compose.yaml -f compose.tunnel.yaml ps`. O token precisa estar preenchido para executar os comandos que incluem o arquivo do túnel.
+
+Documentação oficial: [configurar Cloudflare Tunnel](https://developers.cloudflare.com/tunnel/get-started/) e [parâmetros do conector](https://developers.cloudflare.com/tunnel/reference/run-parameters/).
