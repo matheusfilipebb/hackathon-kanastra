@@ -100,7 +100,7 @@ function Dashboard({ rows, selectedFund, onFundChange }: { rows: Row[]; selected
   }, [rows, selectedFund])
 
   return <section className="dashboard" aria-labelledby="dashboard-title">
-    <div className="dashboard-header"><div><p className="eyebrow">VISÃO GERAL</p><h2 id="dashboard-title">Dashboard da análise</h2><p>Percentuais calculados pela quantidade de notas.</p></div><label>Filtrar por fundo<select value={selectedFund} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label></div>
+    <div className="dashboard-header"><div><p className="eyebrow"></p><h2 id="dashboard-title">Dashboard da análise</h2><p>Percentuais calculados pela quantidade de notas.</p></div><label>Filtrar por fundo<select value={selectedFund} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label></div>
     <div className="dashboard-charts"><Pie title="Resultado da análise" empty="Nenhuma nota para este fundo." slices={[{ label: 'Aceitas', value: summary.approved, color: '#2DAA82' }, { label: 'Barradas', value: summary.rejected, color: '#C35A50' }]} /><Pie title="Motivos de bloqueio" empty="Nenhuma nota barrada neste fundo." slices={summary.reasons} /></div>
     <div className="fund-comparison-heading"><h3>Comparativo entre fundos</h3><p>Exibe todos os fundos do arquivo, independentemente do filtro selecionado.</p></div>
     <FundColumns funds={fundComparison} />

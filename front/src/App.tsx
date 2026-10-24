@@ -63,7 +63,6 @@ function evaluate(invoices: Invoice[]): Result[] {
 
 function App() {
   const [activeView, setActiveView] = useState<'dashboard' | 'notas'>('notas')
-  const [chartsExpanded, setChartsExpanded] = useState(true)
   const [search, setSearch] = useState({ cedente: '', sacado: '' })
   const [selectedFund, setSelectedFund] = useState('')
   const [cedenteFilter, setCedenteFilter] = useState('')
@@ -160,7 +159,6 @@ function App() {
     setSearch({ cedente: '', sacado: '' })
     setFilter('todas')
     setCurrentPage(1)
-    setChartsExpanded(true)
     setActiveView('notas')
     if (inputRef.current) inputRef.current.value = ''
   }
@@ -181,7 +179,7 @@ function App() {
               <button type="button" aria-pressed={activeView === 'dashboard'} aria-controls="dashboard-view" onClick={() => setActiveView('dashboard')}><strong>Dashboard</strong><span>Gráficos e comparativo entre fundos</span></button>
             </nav>
           </>}
-          {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <><div className="dashboard-view-actions"><p>Use o filtro dos gráficos para explorar um fundo.</p><button type="button" onClick={() => setActiveView('notas')}>Consultar notas deste fundo →</button></div><div className="charts-section"><button type="button" className="charts-toggle" aria-expanded={chartsExpanded} aria-controls="analysis-charts" onClick={() => setChartsExpanded(expanded => !expanded)}><span>{chartsExpanded ? 'Recolher Dashboard ▴' : 'Expandir Dashboard ▾'}</span></button><div id="analysis-charts">{chartsExpanded && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} />}</div></div></>}</section>}
+          {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} />}</section>}
           {isLoading ? <div className="loading-state" role="status" aria-live="polite"><span className="loading-spinner" /><div><strong>Processando seu arquivo</strong><p>Estamos analisando as notas fiscais. Isso pode levar alguns instantes.</p></div></div> : results.length > 0 && <section id="invoices-view" aria-label="Listagem de notas fiscais" hidden={activeView !== 'notas'}>{activeView === 'notas' && <div className="results-section"><div className="results-header"><div><h2>Notas processadas</h2><p className="invoice-table-hint">Clique em uma nota para ver os dados completos.</p></div></div><div className="listing-filters" aria-label="Filtros da listagem">
             <label>Fundo<select value={selectedFund} onChange={event => setSelectedFund(event.target.value)}><option value="">Todos os fundos</option>{fundOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
             <label>Cedente<input type="search" placeholder="Buscar pelo nome do cedente" value={cedenteFilter} onChange={event => setCedenteFilter(event.target.value)} /></label>
