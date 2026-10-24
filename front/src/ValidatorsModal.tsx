@@ -1,3 +1,4 @@
+import { useModalBackdrop } from './useModalBackdrop'
 import { useEffect, useRef, useState } from 'react'
 
 type Configuration = {
@@ -28,6 +29,7 @@ export default function ValidatorsModal({ apiUrl, onClose }: { apiUrl: string; o
   const [configuration, setConfiguration] = useState<Configuration | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const backdropHandlers = useModalBackdrop(onClose, saving)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -58,7 +60,7 @@ export default function ValidatorsModal({ apiUrl, onClose }: { apiUrl: string; o
     setConfiguration(current => current && ({ ...current, validadores: current.validadores.map((rule, i) => i === index ? { ...rule, ...changes } : rule) }))
   }
 
-  return <dialog ref={dialog} className="validators-modal" aria-labelledby="validators-title" onCancel={event => { event.preventDefault(); if (!saving) onClose() }}>
+  return <dialog ref={dialog} {...backdropHandlers} className="validators-modal" aria-labelledby="validators-title" onCancel={event => { event.preventDefault(); if (!saving) onClose() }}>
     <form onChange={() => setSuccess(false)} onSubmit={async event => {
       event.preventDefault()
       if (!configuration || saving) return

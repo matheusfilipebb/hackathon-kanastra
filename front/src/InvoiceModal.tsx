@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { formatReason } from './reasons'
+import { useModalBackdrop } from './useModalBackdrop'
 
 export type InvoiceDetails = {
   id: string; fundo: string; fundoDocumento: string; cedente: string; cedenteDocumento?: string
@@ -16,6 +17,7 @@ function date(value?: string) {
 
 export default function InvoiceModal({ invoice, onClose }: { invoice: InvoiceDetails; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  const backdropHandlers = useModalBackdrop(onClose)
   useEffect(() => {
     const previousFocus = document.activeElement
     const previousOverflow = document.body.style.overflow
@@ -28,7 +30,8 @@ export default function InvoiceModal({ invoice, onClose }: { invoice: InvoiceDet
       if (previousFocus instanceof HTMLElement) previousFocus.focus()
     }
   }, [])
-  return <dialog ref={dialog} className="invoice-modal" aria-labelledby="invoice-modal-title" onCancel={event => { event.preventDefault(); onClose() }}>
+  return <dialog ref={dialog} {...backdropHandlers} className="invoice-modal" aria-labelledby="invoice-modal-title" onCancel={event => { event.preventDefault(); onClose() }}>
+    <div className="invoice-modal-content">
     <div className="invoice-modal-heading"><div><p className="eyebrow">DETALHES DA NOTA</p><h2 id="invoice-modal-title">{invoice.id}</h2></div><button type="button" className="modal-close" aria-label="Fechar detalhes da nota" onClick={onClose}>×</button></div>
     <span className={`status ${invoice.aprovado ? 'approved' : 'rejected'}`}><span />{invoice.aprovado ? 'Aprovada' : 'Barrada'}</span>
     <section><h3>Dados do recebível</h3><dl className="invoice-details-grid">
@@ -48,5 +51,6 @@ export default function InvoiceModal({ invoice, onClose }: { invoice: InvoiceDet
       <div><dt>Desconto</dt><dd>{currency.format(invoice.precificacao.valor_desconto)}</dd></div><div><dt>Valor líquido</dt><dd className="invoice-net-value">{currency.format(invoice.precificacao.valor_liquido)}</dd></div>
     </dl> : <p>{invoice.aprovado ? 'A precificação não foi informada.' : 'A simulação não está disponível para notas barradas.'}</p>}</section>
     <div className="validators-actions"><button type="button" onClick={onClose}>Fechar</button></div>
+    </div>
   </dialog>
 }
