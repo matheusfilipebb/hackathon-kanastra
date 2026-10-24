@@ -320,3 +320,15 @@ docker compose -f compose.yaml -f compose.tunnel.yaml up -d --build
 ```
 
 Essa proteção não substitui autenticação nem elimina a necessidade de limitar linhas e campos ou isolar cálculos pesados em workers.
+
+
+## Auditoria das dependências
+
+Use `npm ci` para instalar as versões registradas em `package-lock.json`. Para consultar os avisos conhecidos de segurança:
+
+```bash
+npm audit
+npm audit --omit=dev
+```
+
+A atualização de segurança validada em 24/10/2026 usa Fastify `5.12.7`, Swagger UI `6.1.2` e tsx `4.23.15`, com os 55 testes passando em Node 22 e nenhum aviso no audit completo ou de produção. Novos avisos podem surgir depois dessa verificação. Após atualizar o código, reconstrua a imagem Docker para que a correção também entre no container em execução.
