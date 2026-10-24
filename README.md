@@ -1,60 +1,56 @@
 # Antecipe
 
+Acesse a aplicação: [antecipe.alvtn.site](https://antecipe.alvtn.site/).
+
 Aplicação para analisar recebíveis e calcular a precificação sugerida para as notas aprovadas. O projeto contém um frontend em React/Vite e uma API em Node.js, TypeScript e Fastify.
 
-## Requisitos
+## Como rodar
 
-- Node.js 22 ou superior
-- npm
+Escolha uma das opções:
 
-Confira as versões instaladas:
+- **Com Docker Compose:** inicia front e back juntos. Requer Docker Engine e o plugin Compose; não precisa instalar Node.js na máquina.
+- **Com npm:** para desenvolvimento local. Requer Node.js 22 ou superior e npm.
+- **Com Cloudflare Tunnel:** usa Docker Compose e adiciona o acesso pela internet com domínio e token da Cloudflare.
 
-```bash
-node --version
-npm --version
-```
+Se precisar instalar Docker, siga o guia para [Debian](https://docs.docker.com/engine/install/debian/) ou [Ubuntu](https://docs.docker.com/engine/install/ubuntu/). Confira com `docker --version` e `docker compose version`. Se seu usuário não tiver permissão para executar Docker, use `sudo` antes dos comandos `docker compose` abaixo.
 
-## Rodar a aplicação do zero
+## Rodar a aplicação do zero com npm
 
 Clone o repositório e entre na pasta do projeto:
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone https://github.com/matheusfilipebb/hackathon-kanastra.git
 cd hackathon-kanastra
 ```
 
-Instale as dependências do backend e do frontend, cada um em seu diretório:
+Na primeira configuração, copie os exemplos e instale as dependências. Execute a partir da raiz do projeto:
 
 ```bash
-cd back
-npm ci
-cd ../front
-npm ci
+cp back/.env.example back/.env
+cp front/.env.example front/.env
+npm ci --prefix back
+npm ci --prefix front
 ```
 
-Inicie a API em um terminal:
+Se os arquivos `.env` já existirem, mantenha suas configurações em vez de sobrescrevê-los.
+
+Inicie a API em um terminal, a partir da raiz:
 
 ```bash
-cd back
-npm run dev
+npm run dev --prefix back
 ```
 
-A API inicia por padrão em `http://localhost:3000`. Para mudar a porta, defina `PORT`; para mudar o endereço de escuta, defina `HOST` (padrão `0.0.0.0`).
+A API inicia em `http://localhost:3000`. Para mudar a porta ou o endereço de escuta, edite `PORT` e `HOST` em `back/.env`.
 
-Inicie o frontend em outro terminal, a partir da raiz do projeto:
+Em outro terminal, também a partir da raiz:
 
 ```bash
-cd front
+npm run dev --prefix front
 ```
 
-O frontend usa `VITE_API_URL` para localizar a API. Configure-a para a URL da API que está executando localmente e inicie o Vite:
+O `front/.env` usa `VITE_API_URL=http://localhost:3000`. Se mudar a porta da API, ajuste esse endereço também.
 
-```bash
-cp .env.example .env
-npm run dev
-```
-
-Abra no navegador o endereço mostrado pelo Vite (normalmente `http://localhost:5173`). Mantenha os dois processos em execução. Encerre cada um com `Ctrl+C`.
+Abra o endereço mostrado pelo Vite, normalmente `http://localhost:5173`. Mantenha os dois terminais abertos e use `Ctrl+C` para encerrar.
 
 ## Dados e configuração
 
@@ -79,26 +75,26 @@ Veja os detalhes, formatos e exemplos em [docs/rotas.md](docs/rotas.md).
 
 ## Verificações e build
 
-Para executar os testes do backend:
+Execute os comandos a partir da raiz do projeto.
+
+Testes do backend:
 
 ```bash
-cd back
-npm test
+npm test --prefix back
 ```
 
-Para gerar a versão compilada do backend:
+Compilar e iniciar o backend:
 
 ```bash
-cd back
-npm run build
-npm start
+npm run build --prefix back
+npm start --prefix back
 ```
 
-Para compilar o frontend:
+Conferir e compilar o frontend:
 
 ```bash
-cd front
-npm run build
+npm run lint --prefix front
+npm run build --prefix front
 ```
 
 ## Estrutura do projeto
@@ -109,16 +105,60 @@ front/      Interface web em React e Vite
 docs/       Documentação de rotas e comparação com o resultado esperado
 ```
 
-## Opção: executar com Docker Compose
+## Rodar do zero com Docker Compose
 
-Requer Docker com o plugin Compose. Na raiz do repositório:
+Essa opção sobe o front e o back juntos. Você precisa de Git, Docker Engine e Docker Compose instalados. Não precisa instalar Node.js ou npm na máquina.
 
-```bash
-docker compose up -d --build
-```
+1. Confira se os comandos estão disponíveis:
 
-- Frontend: http://localhost:8080
-- API e Swagger (na máquina onde o Docker está rodando): http://localhost:3000/docs
+   ```bash
+   git --version
+   docker --version
+   docker compose version
+   ```
+
+   Se o Docker não estiver instalado, use o guia para [Debian](https://docs.docker.com/engine/install/debian/) ou [Ubuntu](https://docs.docker.com/engine/install/ubuntu/). Se aparecer erro de permissão no Docker, execute os comandos `docker compose` com `sudo`.
+
+2. Clone o projeto em uma pasta onde seu usuário tenha permissão:
+
+   ```bash
+   cd ~
+   git clone https://github.com/matheusfilipebb/hackathon-kanastra.git
+   cd hackathon-kanastra
+   ```
+
+3. Crie o arquivo de configuração:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Os valores do exemplo já funcionam para rodar localmente. Se o `.env` já existir, mantenha suas configurações. Não é necessário criar os `.env` do front e do back nem preencher o token da Cloudflare para essa opção.
+
+4. Construa e inicie a aplicação:
+
+   ```bash
+   docker compose up -d --build --wait
+   ```
+
+   Na primeira execução, o Docker baixa as imagens, instala as dependências e compila o projeto. Aguarde o comando terminar.
+
+5. Confira os serviços:
+
+   ```bash
+   docker compose ps
+   ```
+
+   Os serviços `front` e `back` devem aparecer em execução e saudáveis (`healthy`).
+
+6. Abra no navegador da máquina onde o Docker está rodando:
+
+   - Aplicação: [http://localhost:8080](http://localhost:8080)
+   - Documentação da API: [http://localhost:3000/docs](http://localhost:3000/docs)
+
+   Envie um CSV no formato esperado para iniciar a análise.
+
+Para acessar de outro computador na mesma rede, altere `FRONT_HOST=0.0.0.0` no `.env`, execute novamente `docker compose up -d` e abra `http://IP_DA_MAQUINA:8080`. A porta 8080 precisa estar liberada no firewall. Para acesso pela internet, siga a opção com Cloudflare Tunnel abaixo.
 
 O frontend usa `/api` e o Nginx encaminha as chamadas ao backend pela rede do Compose. Isso permite acessar a aplicação pelo endereço do servidor sem configurar o IP da API no navegador e evita CORS entre front e back. O frontend é compilado para produção; alterações no código exigem reconstruir as imagens.
 
@@ -154,7 +194,8 @@ cp back/.env.example back/.env
 
 | Arquivo | Variáveis | Uso |
 | --- | --- | --- |
-| `.env` | `FRONT_PORT=8080`, `BACK_PORT=3000` | Portas publicadas pelo Docker Compose. |
+| `.env` | `FRONT_PORT=8080`, `BACK_PORT=3000`, `FRONT_HOST=127.0.0.1` | Portas e endereço publicados pelo Docker Compose. |
+| `.env` | `CLOUDFLARE_TUNNEL_TOKEN` | Token necessário apenas para iniciar com Cloudflare Tunnel. |
 | `front/.env` | `VITE_API_URL=http://localhost:3000` | Endereço da API usado pelo Vite no desenvolvimento local. |
 | `back/.env` | `HOST=0.0.0.0`, `PORT=3000` | Endereço e porta usados por `npm run dev` e `npm start` no backend (Node.js 22+). |
 
@@ -164,6 +205,8 @@ No Docker, a API continua na porta interna 3000 e o frontend usa `/api` via Ngin
 ## Opção: publicar com Cloudflare Tunnel
 
 O arquivo `compose.tunnel.yaml` adiciona um conector `cloudflared` à rede da aplicação. O modo local continua funcionando com apenas `compose.yaml`.
+
+Antes de seguir, clone o projeto e crie o `.env` da raiz conforme a opção Docker acima.
 
 1. No painel Cloudflare, crie um túnel do tipo **Cloudflared**, gerenciado remotamente, e copie o token mostrado na opção Docker.
 2. No `.env` da raiz, configure:
