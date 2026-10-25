@@ -54,6 +54,8 @@ A aplicabilidade depende do recurso: o Fastify deste projeto não está configur
 
 ### 4. Médio — configuração aceita pelo PUT pode interromper todas as análises
 
+**Atualização:** corrigido no fluxo de gravação. O service agora valida a estrutura, códigos implementados, campos permitidos, listas, agrupamento, intervalos de concentração e relação entre prazos ativos antes de persistir. Regras inativas recebem a mesma validação. O schema HTTP lista os códigos suportados, e o motor bloqueia códigos desconhecidos de arquivos legados e só despacha propriedades próprias. Testes verificam HTTP 400 e preservação do JSON. O texto abaixo descreve o achado original.
+
 **Referências:** [validação da configuração](../back/src/services/validadores.service.ts), [schema](../back/src/routes/validadores.routes.ts), [início da execução](../back/src/services/analise.service.ts).
 
 O service valida apenas parte dos parâmetros. Aceita, por exemplo, uma regra ativa de situação cadastral sem `situacoes_aceitas` e concentração de sacado com agrupamento diferente de `RAIZ_CNPJ`. O arquivo é salvo com sucesso; a inconsistência só é detectada ao iniciar o próximo upload.

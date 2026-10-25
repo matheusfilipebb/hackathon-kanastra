@@ -1,4 +1,4 @@
-import { ValidadoresService } from './validadores.service.js';
+import { ValidadoresService, codigosValidadores } from './validadores.service.js';
 import type { ConfiguracaoValidadores } from '../types/validadores.js';
 import { validarCnpjSacado } from '../validators/individuais/cnpj-sacado-valido.validator.js';
 import { SituacaoCadastralRepository } from '../repositories/situacao-cadastral.repository.js';
@@ -65,7 +65,7 @@ export class AnaliseService {
         PRAZO_MINIMO: () => execucao.validarPrazoMinimo(nota.DATA_VENCIMENTO_ORIGINAL, referencia),
       };
       const barradoPor = execucao.validadores
-        .filter(regra => regra.ativo && verificacoes[regra.codigo] && !verificacoes[regra.codigo]())
+        .filter(regra => regra.ativo && Object.hasOwn(verificacoes, regra.codigo) && !verificacoes[regra.codigo]())
         .map(regra => regra.codigo);
       const status: 'APROVADO' | 'BARRADO' = barradoPor.length ? 'BARRADO' : 'APROVADO';
       return { ...nota, status, ...(barradoPor.length ? { barrado_por: barradoPor } : {}) };
@@ -92,6 +92,9 @@ export class AnaliseService {
   async iniciarExecucao() {
     const configuracao = await this.validadoresService.get();
     const validadores = configuracao.validadores;
+    if (validadores.some(regra => !(codigosValidadores as readonly string[]).includes(regra.codigo))) {
+      throw new Error('Configuração contém código de validador não suportado. Corrija a configuração antes de analisar o lote.');
+    }
     const precificacao = new PrecificacaoService(configuracao.precificacao);
     const concentracaoSacado = obterParametroNumerico(validadores, 'CONCENTRACAO_MAXIMA_SACADO', 'percentual_maximo');
     const concentracaoCedente = obterParametroNumerico(validadores, 'CONCENTRACAO_MAXIMA_CEDENTE', 'percentual_maximo');

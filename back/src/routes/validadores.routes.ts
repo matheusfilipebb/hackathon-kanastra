@@ -3,6 +3,7 @@ import { errorSchema } from '../docs/schemas.js';
 import {
   getValidadores, setValidadores,
 } from '../controllers/validadores.controller.js';
+import { codigosValidadores } from '../services/validadores.service.js';
 import type { ConfiguracaoValidadores } from '../types/validadores.js';
 
 const configuracaoSchema = {
@@ -21,17 +22,19 @@ const configuracaoSchema = {
     },
     validadores: {
       type: 'array',
+      maxItems: codigosValidadores.length,
       items: {
         type: 'object',
         additionalProperties: true,
         required: ['codigo', 'ativo', 'parametros'],
         properties: {
-          codigo: { type: 'string', minLength: 1, pattern: '\\S', description: 'Código da regra, único na configuração.' },
+          codigo: { type: 'string', enum: codigosValidadores, description: 'Código da regra, único na configuração.' },
           ativo: { type: 'boolean', description: 'Indica se a regra está ativa.' },
           parametros: {
             type: 'object', additionalProperties: true,
             description: 'Parâmetros da regra: valor_minimo e percentual_maximo não negativos; '
-              + 'prazo_minimo_dias e prazo_maximo_dias inteiros não negativos; tipos_aceitos deve conter apenas '
+              + 'percentual_maximo até 100; prazos inteiros seguros não negativos; agrupamento do sacado RAIZ_CNPJ; '
+              + 'situacoes_aceitas não vazia; listas sem duplicações; tipos_aceitos deve conter apenas '
               + 'Duplicata, Duplicata de Serviço, Cheque, CCB ou Nota Comercial.',
           },
         },

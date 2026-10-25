@@ -73,7 +73,12 @@ O controller delega ao service as validações e ao repository a leitura e grava
 - `PRAZO_MINIMO.prazo_minimo_dias` e `PRAZO_MAXIMO.prazo_maximo_dias` devem ser inteiros maiores ou iguais a zero.
 - `TIPO_RECEBIVEL.tipos_aceitos` deve ser uma lista não vazia contendo apenas `Duplicata`, `Duplicata de Serviço`, `Cheque`, `CCB` ou `Nota Comercial`.
 - A taxa de precificação não pode ser negativa e `base_dias` deve ser um inteiro positivo.
-- Códigos de validadores não podem se repetir. Os parâmetros são validados também nas regras inativas.
+- Códigos devem pertencer aos nove validadores implementados e não podem se repetir. Códigos reservados ou desconhecidos são rejeitados.
+- `SITUACAO_CADASTRAL_SACADO.situacoes_aceitas` deve ser uma lista não vazia de textos. As listas não aceitam duplicações nem espaços nas extremidades e têm até 50 itens.
+- `CONCENTRACAO_MAXIMA_SACADO.agrupamento` deve ser `RAIZ_CNPJ`; os percentuais de concentração ficam entre 0 e 100, inclusive.
+- Se os dois prazos estiverem ativos, o mínimo não pode ser maior que o máximo. Dias e base devem ser inteiros seguros.
+- Campos e parâmetros não suportados são rejeitados. Textos devem ter de 1 a 200 caracteres, sem espaços nas extremidades.
+- Os parâmetros são validados também nas regras inativas. Em caso de erro, o PUT retorna 400 antes de qualquer gravação. Uma lista de regras vazia ou regras desativadas continuam sendo opções válidas; essa flexibilidade não substitui autorização para editar a configuração.
 
 As atualizações de configuração são usadas na próxima análise de upload. Execute os testes com `npm test`.
 
@@ -332,3 +337,8 @@ npm audit --omit=dev
 ```
 
 A atualização de segurança validada em 24/10/2026 usa Fastify `5.12.7`, Swagger UI `6.1.2` e tsx `4.23.15`, com os 55 testes passando em Node 22 e nenhum aviso no audit completo ou de produção. Novos avisos podem surgir depois dessa verificação. Após atualizar o código, reconstrua a imagem Docker para que a correção também entre no container em execução.
+
+
+### Configurações legadas
+
+A validação reforçada impede novas gravações inválidas pelo PUT. Ela não reescreve automaticamente arquivos já alterados manualmente. Se um JSON legado contiver código de regra desconhecido, o motor interrompe a execução com uma mensagem explícita; não ignora a regra para aprovar o lote. O despacho também verifica propriedades próprias do objeto de funções, impedindo acesso a propriedades herdadas. Corrija o arquivo legado ou envie uma configuração válida completa antes de tentar novamente.
