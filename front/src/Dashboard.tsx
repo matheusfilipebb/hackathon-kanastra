@@ -1,10 +1,13 @@
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useEffect, useRef } from 'react'
 import { getReasonTitle, uniqueReasons } from './reasons'
 import { useDashboardPanels } from './useDashboardPanels'
 import type { DashboardPanel } from './useDashboardPanels'
 import './Dashboard.css'
+import { FinancialPanel } from './DashboardInsights'
+import { dashboardPanels } from './dashboardPanels'
+import type { DashboardRow } from './dashboardMetrics'
 
-type Row = { fundo: string; fundoDocumento: string; aprovado: boolean; motivos: string[] }
+type Row = DashboardRow
 type Slice = { label: string; value: number; color: string }
 const colors = ['#193C32', '#2DAA82', '#14735A', '#1E5546', '#638B80', '#C35A50', '#2DAA82', '#A7473F', '#527CA3']
 const number = new Intl.NumberFormat('pt-BR')
@@ -68,7 +71,14 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
 }
 
 function Dashboard({ rows, selectedFund, onFundChange, activePanel, onPanelChange }: { rows: Row[]; selectedFund: string; onFundChange: (fund: string) => void; activePanel: DashboardPanel; onPanelChange: (panel: DashboardPanel) => void }) {
-  const { containerRef, setPanel, onKeyDown, onTouchStart, onTouchEnd } = useDashboardPanels(activePanel, onPanelChange)
+  const { containerRef, setPanel, onKeyDown, onTouchStart, onTouchEnd } = useDashboardPanels(activePanel, onPanelChange, dashboardPanels.length)
+  const navigationRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const nav = navigationRef.current
+    const button = nav?.querySelector<HTMLElement>('[aria-pressed="true"]')
+    if (nav && button) nav.scrollLeft = button.offsetLeft - nav.offsetLeft - (nav.clientWidth - button.offsetWidth) / 2
+  }, [activePanel])
+  const scopedRows = useMemo(() => selectedFund ? rows.filter(row => (row.fundoDocumento || row.fundo) === selectedFund) : rows, [rows, selectedFund])
   const funds = useMemo(() => {
     const grouped = new Map<string, string>()
     for (const row of rows) grouped.set(row.fundoDocumento || row.fundo, `${row.fundo}${row.fundoDocumento ? ` · ${row.fundoDocumento}` : ''}`)
@@ -107,23 +117,25 @@ function Dashboard({ rows, selectedFund, onFundChange, activePanel, onPanelChang
   const total = summary.approved + summary.rejected
   return <section ref={containerRef} className="dashboard dashboard-experience" aria-labelledby="dashboard-title" onKeyDown={onKeyDown} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
     <header className="dashboard-header">
-      <div><h2 id="dashboard-title">Dashboard da análise</h2><p>{number.format(activePanel === 0 ? total : rows.length)} notas · {activePanel === 0 && selectedFund ? 'fundo selecionado' : `${funds.length} ${funds.length === 1 ? 'fundo' : 'fundos'} no arquivo`}</p></div>
-      <label>{activePanel === 0 ? 'Filtrar visão geral por fundo' : 'Comparativo de todos os fundos'}<select aria-label="Filtrar por fundo" disabled={activePanel === 1} value={activePanel === 0 ? selectedFund : ''} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      <div><h2 id="dashboard-title">Dashboard da análise</h2><p>{number.format(activePanel === 1 ? rows.length : total)} notas · {activePanel !== 1 && selectedFund ? 'fundo selecionado' : `${funds.length} ${funds.length === 1 ? 'fundo' : 'fundos'} no arquivo`}</p></div>
+      <label>{activePanel === 1 ? 'Comparativo de todos os fundos' : 'Filtrar por fundo'}<select aria-label="Filtrar por fundo" disabled={activePanel === 1} value={activePanel === 1 ? '' : selectedFund} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
     </header>
     <div className="dashboard-stage" tabIndex={0} role="region" aria-label="Gráficos da análise. Use as setas para cima e para baixo para trocar de painel." data-panel-index={activePanel}>
       <section id="dashboard-overview" className={`dashboard-panel${activePanel === 0 ? ' is-active' : ''}`} data-position={activePanel === 0 ? 'current' : 'before'} aria-label="Visão geral em gráficos de pizza" aria-hidden={activePanel !== 0} ref={element => { if (element) element.inert = activePanel !== 0 }}>
         <div className="dashboard-charts"><Pie title="Resultado da análise" empty="Nenhuma nota para este fundo." slices={[{ label: 'Aprovadas', value: summary.approved, color: '#2DAA82' }, { label: 'Não aprovadas', value: summary.rejected, color: '#C35A50' }]} /><Pie title="Por que as notas não foram aprovadas?" empty="Todas as notas deste fundo foram aprovadas." slices={summary.reasons} /></div>
         <p className="dashboard-panel-note">Percentuais por quantidade de notas. Uma nota pode ter vários motivos; o gráfico de motivos considera o total de ocorrências.</p>
       </section>
-      <section id="dashboard-funds" className={`dashboard-panel${activePanel === 1 ? ' is-active' : ''}`} data-position={activePanel === 1 ? 'current' : 'after'} aria-label="Comparativo por fundo em gráficos de colunas" aria-hidden={activePanel !== 1} ref={element => { if (element) element.inert = activePanel !== 1 }}>
+      <section id="dashboard-funds" className={`dashboard-panel${activePanel === 1 ? ' is-active' : ''}`} data-position={activePanel === 1 ? 'current' : activePanel > 1 ? 'before' : 'after'} aria-label="Comparativo por fundo em gráficos de colunas" aria-hidden={activePanel !== 1} ref={element => { if (element) element.inert = activePanel !== 1 }}>
         <FundColumns funds={fundComparison} />
         <p className="dashboard-panel-note">Todos os fundos do arquivo, independentemente do filtro da visão geral. Role horizontalmente quando houver mais fundos.</p>
       </section>
+      <section id="dashboard-financial" className={`dashboard-panel${activePanel === 2 ? ' is-active' : ''}`} data-position={activePanel === 2 ? 'current' : activePanel > 2 ? 'before' : 'after'} aria-label="Impacto financeiro" aria-hidden={activePanel !== 2} ref={element => { if (element) element.inert = activePanel !== 2 }}>
+        <FinancialPanel rows={scopedRows} />
+      </section>
     </div>
     <footer className="dashboard-panel-navigation">
-      <nav aria-label="Tipos de gráfico"><button type="button" aria-pressed={activePanel === 0} aria-controls="dashboard-overview" onClick={() => setPanel(0)}><span>01</span> Visão geral</button><button type="button" aria-pressed={activePanel === 1} aria-controls="dashboard-funds" onClick={() => setPanel(1)}><span>02</span> Por fundo</button></nav>
-      <span className="dashboard-scroll-hint" aria-hidden="true">{activePanel === 0 ? 'Role para ver o comparativo ↓' : 'Role para voltar à visão geral ↑'}</span>
-      <span className="dashboard-panel-announcement" role="status">{activePanel === 0 ? 'Painel 1 de 2: gráficos de pizza' : 'Painel 2 de 2: gráficos de colunas'}</span>
+      <nav ref={navigationRef} aria-label="Tipos de gráfico" data-dashboard-scroll>{dashboardPanels.map((panel, index) => <button key={panel.id} type="button" aria-pressed={activePanel === index} aria-controls={panel.id} onClick={() => setPanel(index)}><span>{String(index + 1).padStart(2, '0')}</span> {panel.label}</button>)}</nav>
+      <span className="dashboard-panel-announcement" role="status">{`Painel ${activePanel + 1} de ${dashboardPanels.length}: ${dashboardPanels[activePanel].label}`}</span>
     </footer>
   </section>
 }

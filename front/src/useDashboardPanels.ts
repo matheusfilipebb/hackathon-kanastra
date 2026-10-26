@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { KeyboardEvent, TouchEvent } from 'react'
 
-export type DashboardPanel = 0 | 1
+export type DashboardPanel = number
 
 function scrollRegion(target: EventTarget | null) {
   return target instanceof Element ? target.closest<HTMLElement>('[data-dashboard-scroll]') : null
 }
 
-export function useDashboardPanels(activePanel: DashboardPanel, onPanelChange: (panel: DashboardPanel) => void) {
+export function useDashboardPanels(activePanel: DashboardPanel, onPanelChange: (panel: DashboardPanel) => void, panelCount: number) {
   const containerRef = useRef<HTMLElement>(null)
   const lockedUntil = useRef(0)
   const wheel = useRef({ value: 0, at: 0 })
   const touch = useRef<{ x: number; y: number; blocked: boolean } | null>(null)
 
   const setPanel = useCallback((panel: DashboardPanel) => {
+    panel = Math.max(0, Math.min(panelCount - 1, panel))
     if (panel === activePanel) return
     lockedUntil.current = performance.now() + 650
     wheel.current.value = 0
     onPanelChange(panel)
-  }, [activePanel, onPanelChange])
+  }, [activePanel, onPanelChange, panelCount])
 
   useEffect(() => {
     const container = containerRef.current
@@ -36,28 +37,31 @@ export function useDashboardPanels(activePanel: DashboardPanel, onPanelChange: (
       wheel.current.value += delta
       wheel.current.at = now
       if (Math.abs(wheel.current.value) >= 80) {
-        setPanel(wheel.current.value > 0 ? 1 : 0)
+        setPanel(activePanel + (wheel.current.value > 0 ? 1 : -1))
         wheel.current.value = 0
       }
     }
     container.addEventListener('wheel', onWheel, { passive: false })
     return () => container.removeEventListener('wheel', onWheel)
-  }, [setPanel])
+  }, [setPanel, activePanel])
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.altKey || event.ctrlKey || event.metaKey) return
     if (event.target instanceof Element && event.target.closest('button,input,select,textarea,a,[data-dashboard-scroll]')) return
     if (event.key === ' ' && event.shiftKey) {
       event.preventDefault()
-      setPanel(0)
+      setPanel(activePanel - 1)
       return
     }
-    if (['ArrowDown', 'PageDown', 'End', ' '].includes(event.key)) {
+    if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault()
-      setPanel(1)
-    } else if (['ArrowUp', 'PageUp', 'Home'].includes(event.key)) {
+      setPanel(event.key === 'Home' ? 0 : panelCount - 1)
+    } else if (['ArrowDown', 'PageDown', ' '].includes(event.key)) {
       event.preventDefault()
-      setPanel(0)
+      setPanel(activePanel + 1)
+    } else if (['ArrowUp', 'PageUp'].includes(event.key)) {
+      event.preventDefault()
+      setPanel(activePanel - 1)
     }
   }
 
@@ -74,7 +78,7 @@ export function useDashboardPanels(activePanel: DashboardPanel, onPanelChange: (
     const end = event.changedTouches[0]
     if (!start || !end || start.blocked || performance.now() < lockedUntil.current) return
     const dy = start.y - end.clientY
-    if (Math.abs(dy) >= 60 && Math.abs(dy) > Math.abs(start.x - end.clientX) * 1.2) setPanel(dy > 0 ? 1 : 0)
+    if (Math.abs(dy) >= 60 && Math.abs(dy) > Math.abs(start.x - end.clientX) * 1.2) setPanel(activePanel + (dy > 0 ? 1 : -1))
   }
 
   return { containerRef, activePanel, setPanel, onKeyDown, onTouchStart, onTouchEnd }

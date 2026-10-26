@@ -72,3 +72,33 @@
   .dashboard-experience .fund-bars-legend { gap: 14px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .dashboard-panel { transition: none; transform: none; } }
+
+/* Analyst panels share the fixed stage and scroll only inside each visualization. */
+.dashboard-panel-navigation { display: flex; justify-content: center; }
+.dashboard-panel-navigation nav { position: relative; max-width: 100%; min-width: 0; padding: 3px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.dashboard-panel-navigation button { flex-shrink: 0; white-space: nowrap; }
+.dashboard-experience .insight-card { flex: 1 1 0; gap: 16px; }
+.insight-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: 0 0 auto; gap: 12px; margin: 0; }
+.insight-metrics > div { min-width: 0; padding: 16px; border-radius: 12px; background: #f0f3e9; }
+.insight-metrics dt { color: #597360; font-size: 12px; }
+.insight-metrics dd { margin: 8px 0 4px; color: #193c32; font-size: clamp(18px, 2vw, 30px); font-weight: 600; overflow-wrap: anywhere; }
+.insight-metrics small { color: #597360; font-size: 11px; }
+.insight-scroll { flex: 1 1 0; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.insight-bars { display: flex; flex-direction: column; justify-content: center; gap: 26px; min-height: 100%; margin: 0; padding: 10px 4px; list-style: none; }
+.insight-bars li { flex: 0 0 auto; }
+.insight-bar-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14px; }
+.insight-bar-heading strong { flex-shrink: 0; }
+.insight-track { height: 14px; margin: 10px 0 7px; overflow: hidden; border-radius: 8px; background: #193c320b; }
+.insight-track > span { display: block; height: 100%; min-width: 0; border-radius: inherit; }
+.insight-bars small { color: #668077; font-size: 12px; }
+@media (max-width: 760px) {
+  .dashboard-experience .insight-card { gap: 10px; }
+  .insight-metrics { gap: 6px; }
+  .insight-metrics > div { padding: 10px 8px; }
+  .insight-metrics dt,.insight-metrics small { font-size: 10px; }
+  .insight-metrics dd { font-size: 14px; line-height: 1.5; }
+  .insight-bar-heading { align-items: flex-start; font-size: 12px; }
+  .insight-bar-heading > span { min-width: 0; overflow-wrap: anywhere; }
+  .insight-bars { justify-content: flex-start; gap: 18px; }
+  .insight-bars small { font-size: 10px; }
+}

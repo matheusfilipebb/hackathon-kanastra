@@ -1,0 +1,21 @@
+import type { ReactNode } from 'react'
+import { financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
+import type { DashboardRow } from './dashboardMetrics'
+
+export function InsightMetrics({ items }: { items: { label: string; value: string; detail?: string }[] }) {
+  return <dl className="insight-metrics">{items.map(item => <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd>{item.detail && <small>{item.detail}</small>}</div>)}</dl>
+}
+export function InsightCard({ title, children, note }: { title: string; children: ReactNode; note: string }) {
+  return <article className="dashboard-chart insight-card"><h3>{title}</h3>{children}<p className="dashboard-panel-note">{note}</p></article>
+}
+export function ValueBars({ items, total, label }: { items: { label: string; value: number; detail: string; color?: string }[]; total: number; label: string }) {
+  const maximum = items.reduce((max, item) => Math.max(max, item.value), 1)
+  return <div className="insight-scroll" data-dashboard-scroll tabIndex={0} role="region" aria-label={label}><ul className="insight-bars">{items.map(item => <li key={item.label}><div className="insight-bar-heading"><span>{item.label}</span><strong>{money.format(item.value / 100)}</strong></div><div className="insight-track" aria-hidden="true"><span style={{ width: `${share(item.value, maximum)}%`, background: item.color ?? '#2daa82' }} /></div><small>{item.detail} · {formatShare(item.value, total)} do valor</small></li>)}</ul>{items.length === 0 && <p className="dashboard-empty">Nenhum dado disponível para este recorte.</p>}</div>
+}
+export function FinancialPanel({ rows }: { rows: DashboardRow[] }) {
+  const summary = financialSummary(rows)
+  return <InsightCard title="Impacto financeiro da análise" note={`Valores nominais do arquivo, sem desconto de antecipação.${summary.invalid ? ` ${number.format(summary.invalid)} notas com valor inválido foram excluídas dos totais em R$.` : ''}`}>
+    <InsightMetrics items={[{ label: 'Valor analisado', value: money.format(summary.total / 100) }, { label: 'Aprovado', value: money.format(summary.approved / 100), detail: `${formatShare(summary.approved, summary.total)} do valor` }, { label: 'Não aprovado', value: money.format(summary.rejected / 100), detail: 'Valor fora da operação neste resultado' }]} />
+    <ValueBars label="Distribuição do valor nominal por resultado" total={summary.total} items={[{ label: 'Aprovadas', value: summary.approved, detail: `${number.format(rows.filter(row => row.aprovado).length)} notas`, color: '#2daa82' }, { label: 'Não aprovadas', value: summary.rejected, detail: `${number.format(rows.filter(row => !row.aprovado).length)} notas`, color: '#c35a50' }]} />
+  </InsightCard>
+}
