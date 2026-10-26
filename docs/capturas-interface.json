@@ -1,0 +1,134 @@
+{
+  "capturedAt": "2026-10-26T05:00:18.446Z",
+  "baseUrl": "http://127.0.0.1:5175",
+  "source": "Dados sintéticos e resposta controlada no navegador; não são resultados de uma carteira real nem validação de regras do backend",
+  "referenceDate": "2026-10-26",
+  "notes": 120,
+  "funds": 8,
+  "approved": 96,
+  "rejected": 24,
+  "reducedMotion": true,
+  "captures": [
+    {
+      "file": "pagina-inicial.png",
+      "description": "Abertura da aplicação; capa estática por movimento reduzido",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "topbar-rolagem.png",
+      "description": "Cabeçalho da página inicial após rolagem e área de upload",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "pagina-inicial-mobile.png",
+      "description": "Página inicial no celular",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "pagina-notas.png",
+      "description": "Notas no desktop, filtros recolhidos",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "notas-filtros-desktop.png",
+      "description": "Filtros expandidos da listagem",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "notas-mobile.png",
+      "description": "Notas e barra flutuante inferior no celular",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "notas-nao-aprovadas-desktop.png",
+      "description": "Explicação dos motivos de uma nota não aprovada",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "notas-nao-aprovadas-mobile.png",
+      "description": "Detalhes de não aprovação no celular",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "dashboard-paineis-pizzas.png",
+      "description": "Resultado da análise",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "dashboard-paineis-colunas.png",
+      "description": "Notas aprovadas e não aprovadas por fundo",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "dashboard-financeiro.png",
+      "description": "Impacto financeiro da análise",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "dashboard-vencimentos.png",
+      "description": "Agenda de vencimentos",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "dashboard-concentracao.png",
+      "description": "Concentração da carteira",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "dashboard-impacto-motivos.png",
+      "description": "Motivos com maior impacto financeiro",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "dashboard-antecipacao.png",
+      "description": "Simulação de antecipação",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "filtro-fundo-desktop.png",
+      "description": "Modal de seleção de fundo com busca no desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "filtro-fundo-mobile.png",
+      "description": "Modal de fundos com lista interna no celular",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "dashboard-paineis-mobile.png",
+      "description": "Visão geral com navegação dos sete painéis no celular",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "dashboard-antecipacao-mobile.png",
+      "description": "Simulação de antecipação no celular",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "processamento-estimativa.png",
+      "description": "Faixa de tempo de processamento; histórico e atraso controlados para demonstração",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "pageErrors": []
+}

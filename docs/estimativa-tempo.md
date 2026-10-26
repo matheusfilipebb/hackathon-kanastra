@@ -18,6 +18,12 @@ Envio e recebimento usam a velocidade recente dos eventos de transferência, com
 
 O tempo observado de processamento começa quando o upload termina e termina quando os cabeçalhos da resposta chegam (`HEADERS_RECEIVED`). Isso evita incluir todo o download da resposta na medição da análise. O valor observado ainda pode incluir latência e preparação da resposta pelo servidor; não representa uma medição isolada de CPU.
 
+## Captura da interface
+
+![Exemplo da faixa de tempo durante o processamento](processamento-estimativa.png)
+
+Captura demonstrativa de 26/10/2026. Histórico e atraso HTTP controlados para mostrar a faixa; não é uma medição de desempenho real. O [manifesto](capturas-interface.json) e o [guia da interface](interface.md) descrevem a geração.
+
 ## Verificação
 
 - `npm test --prefix front`, com Node 24: nove testes dos cálculos dos painéis, histórico, estimativas e velocidade recente.

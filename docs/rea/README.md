@@ -2,6 +2,8 @@
 
 A análise da página pública da Kanastra foi copiada para este projeto e usada para atualizar o frontend em 25/10/2026.
 
+As evidências e capturas desta pasta documentam aquela etapa histórica. Para o estado atual de Notas, dos sete painéis e do modal de fundos, consulte o [guia da interface com prints renovados](../interface.md).
+
 ## Evidências da referência
 
 - [Registro da primeira execução](execucao-inicial.md).

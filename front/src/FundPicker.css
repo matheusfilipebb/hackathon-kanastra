@@ -1,0 +1,37 @@
+.fund-picker { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.fund-picker-label { color: #193c32; font-size: 11px; line-height: 1.5; }
+.fund-picker .fund-picker-trigger { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-width: 0; padding: 6px 10px; border: 1px solid #193c3233; border-radius: 8px; background: #ffffffb3; color: #193c32; font: 13px/1.5 'Inter', sans-serif; text-align: left; }
+.fund-picker-trigger > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fund-picker-trigger svg { flex-shrink: 0; }
+.fund-picker-trigger:disabled { opacity: .6; cursor: default; }
+.fund-picker-trigger:focus-visible,.fund-picker-modal button:focus-visible,.fund-picker-search input:focus-visible { outline: 2px solid #14735a; outline-offset: 3px; }
+.app-shell--notes .listing-filters .fund-picker .fund-picker-trigger { padding: 7px 10px; background: #ffffffb3; font-size: 14px; }
+.fund-picker-modal { width: min(540px, calc(100% - 28px)); max-height: min(680px, calc(100dvh - 40px)); margin: auto; padding: 24px; overflow: hidden; border: 1px solid #193c3220; border-radius: 20px; background: #fffdf9; color: #193c32; box-shadow: 0 24px 80px #10271f40; }
+.fund-picker-modal[open] { display: flex; flex-direction: column; gap: 14px; }
+.fund-picker-modal::backdrop { background: #10271fa6; backdrop-filter: blur(4px); }
+.fund-picker-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex: 0 0 auto; }
+.fund-picker-heading h2 { margin: 0; font: 400 20px/1.5 'Unbounded', sans-serif; letter-spacing: -.7px; }
+.fund-picker-heading p { margin: 6px 0 0; color: #668077; font-size: 13px; line-height: 1.5; }
+.fund-picker-close { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: #193c3208; color: #193c32; font-size: 26px; }
+.fund-picker-search { display: flex; flex-direction: column; flex: 0 0 auto; gap: 6px; font-size: 12px; }
+.fund-picker-search input { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #193c3233; border-radius: 10px; background: white; color: #193c32; font: 14px/1.5 'Inter', sans-serif; }
+.fund-picker-options { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.fund-picker-option { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 48px; padding: 12px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #193c32; font-size: 13px; line-height: 1.6; text-align: left; }
+.fund-picker-option > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.fund-picker-option:hover { background: #f0f3e9; }
+.fund-picker-option[aria-pressed="true"] { border-color: #14735a50; background: #eaf2e8; }
+.fund-picker-all { flex: 0 0 auto; }
+.fund-picker-option small { display: block; color: #668077; font-size: 11px; }
+.fund-picker-check { display: grid; place-items: center; flex: 0 0 auto; width: 20px; height: 20px; border: 1px solid #193c3233; border-radius: 50%; }
+.fund-picker-option[aria-pressed="true"] .fund-picker-check { border-color: #14735a; background: #14735a; color: white; }
+.fund-picker-count { flex: 0 0 auto; margin: 0; color: #668077; font-size: 11px; }
+.fund-picker-empty { padding: 14px 8px; color: #668077; font-size: 13px; line-height: 1.6; }
+.fund-picker-footer { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; flex: 0 0 auto; margin: 0; padding: 12px 0 0; border-top: 1px solid #193c3214; font-family: 'Inter', sans-serif; }
+.fund-picker-footer span { color: #668077; font-size: 11px; line-height: 1.5; }
+.fund-picker-footer button { padding: 8px 14px; border: 1px solid #193c3233; border-radius: 999px; background: transparent; color: #193c32; font-size: 12px; }
+@media (max-width: 760px) {
+  .fund-picker-label { font-size: 10px; line-height: 1.4; }
+  .fund-picker .fund-picker-trigger { padding: 7px; font-size: 12px; }
+  .fund-picker-modal { padding: 18px; }
+  .fund-picker-heading h2 { font-size: 18px; }
+}

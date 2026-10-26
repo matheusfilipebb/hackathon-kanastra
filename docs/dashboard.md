@@ -12,11 +12,11 @@ O dashboard ocupa a janela e tem sete painéis:
 
 Rolar para baixo avança um painel; rolar para cima volta ao anterior. A navegação para nos limites do primeiro e último painéis. A transição combina opacidade e deslocamento, com bloqueio temporário para evitar trocas causadas pela inércia do scroll. A preferência por movimento reduzido remove a animação.
 
-Os botões **Visão geral** e **Por fundo** permitem selecionar diretamente o painel. Com a área dos gráficos em foco, use as setas, Page Up, Page Down, Home, End ou espaço; Home vai ao primeiro painel, End ao último e Shift + espaço volta um painel. No celular, deslizar para cima ou para baixo também troca os painéis.
+Os sete botões no rodapé permitem selecionar diretamente o painel desejado. Com a área dos gráficos em foco, use as setas, Page Up, Page Down, Home, End ou espaço; Home vai ao primeiro painel, End ao último e Shift + espaço volta um painel. No celular, deslizar para cima ou para baixo também troca os painéis.
 
-Legendas extensas e comparativos com muitos fundos têm rolagem interna. A rolagem da legenda é preservada enquanto há conteúdo naquela direção. Movimentos horizontais e Shift + scroll ficam disponíveis para percorrer as colunas.
+Legendas, listas e comparativos têm rolagem interna. O scroll com o mouse sobre essas áreas nunca troca o painel, inclusive no início e no fim da lista ou quando o conteúdo cabe inteiro. Fora dessas áreas, o scroll continua navegando entre os painéis. No comparativo de colunas, a roda do mouse move o gráfico horizontalmente quando há fundos fora da área visível: para baixo avança à direita e para cima volta à esquerda. Movimentos horizontais nativos e Shift + scroll continuam disponíveis.
 
-O filtro por fundo é aplicado à visão geral e aos cinco novos painéis. No comparativo, o seletor indica todos os fundos e fica desabilitado; ao voltar, a seleção anterior é mantida. Os eixos de quantidade usam valores inteiros.
+O filtro por fundo é aplicado à visão geral e aos cinco novos painéis. O botão abre um modal compartilhado com os filtros de Notas, com busca por nome ou CNPJ, opção Todos os fundos e indicação da seleção atual. Escolher aplica o filtro e fecha; cancelar, Esc ou clicar fora mantém a seleção. No comparativo, o seletor indica todos os fundos e fica desabilitado; ao voltar, a seleção anterior é mantida. Os eixos de quantidade usam valores inteiros.
 
 Ao alternar entre Notas e Dashboard, o último painel de gráficos, a página da tabela e sua posição de rolagem são mantidos durante a análise atual. Alterar filtros reinicia a paginação das notas; uma nova análise reinicia a navegação. O cabeçalho do dashboard acompanha as dimensões do topo compacto de Notas no desktop, e os seletores de gráficos ficam centralizados também em telas grandes.
 
@@ -34,13 +34,43 @@ No celular, a navegação entre **Notas**, **Dashboard** e **Nova análise** fic
 
 ## Capturas
 
-As capturas usam dados de exemplo e respostas controladas.
+Renovadas em 26/10/2026 com 120 notas sintéticas, oito fundos, 96 aprovadas e 24 não aprovadas. As respostas são controladas no navegador e não representam resultados reais de validação. O [guia da interface](interface.md) explica a geração e identifica os 20 prints; o [manifesto](capturas-interface.json) registra data e dimensões.
 
-![Visão geral no desktop](dashboard-paineis-pizzas.png)
+### 1. Visão geral
 
-![Comparativo por fundo](dashboard-paineis-colunas.png)
+![Pizzas de aprovação e motivos](dashboard-paineis-pizzas.png)
 
-![Dashboard e navegação no celular](dashboard-paineis-mobile.png)
+### 2. Por fundo
+
+![Colunas comparando os fundos](dashboard-paineis-colunas.png)
+
+### 3. Financeiro
+
+![Valores aprovados e não aprovados](dashboard-financeiro.png)
+
+### 4. Vencimentos
+
+![Valores por faixa de vencimento](dashboard-vencimentos.png)
+
+### 5. Concentração
+
+![Concentração por sacado](dashboard-concentracao.png)
+
+### 6. Impacto dos motivos
+
+![Motivos ordenados pelo valor afetado](dashboard-impacto-motivos.png)
+
+### 7. Antecipação
+
+![Simulação e cobertura por fundo](dashboard-antecipacao.png)
+
+### Seleção de fundo e celular
+
+[Modal no desktop](filtro-fundo-desktop.png) · [Modal no celular](filtro-fundo-mobile.png)
+
+![Visão geral e navegação no celular](dashboard-paineis-mobile.png)
+
+![Antecipação no celular](dashboard-antecipacao-mobile.png)
 
 ## Cálculos e validação dos novos painéis
 

@@ -8,18 +8,31 @@ A atualização visual baseada na análise da Kanastra pelo REA está documentad
 
 Veja também a [apresentação dos resultados não aprovados](docs/resultados-nao-aprovados.md), com explicações dos critérios e orientações para conferir os dados.
 
-O [dashboard com troca de painéis](docs/dashboard.md) apresenta pizzas e colunas em uma tela fixa, com navegação por scroll, teclado, botões e gestos no celular.
+O [dashboard com sete painéis](docs/dashboard.md) reúne visão geral, comparativo por fundo, impacto financeiro, vencimentos, concentração, impacto dos motivos e simulação de antecipação. A navegação funciona por scroll, teclado, botões e gestos no celular.
+
+O [guia da interface atual](docs/interface.md) reúne os comportamentos, as capturas de desktop e celular e o procedimento para renovar os prints. O [histórico deste chat](docs/prompts/chat-interface.md) preserva os 35 pedidos e os anexos usados como referência.
 
 ## Telas
 
+Capturas atualizadas em 26/10/2026, com 120 notas e oito fundos sintéticos. As respostas são controladas para demonstrar a interface; não representam uma carteira real. O [catálogo dos 20 prints](docs/interface.md#catálogo-das-capturas-atuais) registra os demais estados e as dimensões.
+
 ### Página inicial
-![pagina-inicial](./docs/pagina-inicial.jpeg)
 
-### Página tabela de notas
-![pagina-notas](./docs/pagina-notas.jpeg)
+![Página inicial do Antecipe](docs/pagina-inicial.png)
 
-### Página gráfico
-![pagina-grafico](./docs/pagina-grafico.jpeg)
+### Notas e filtros recolhidos
+
+![Listagem de notas no desktop](docs/pagina-notas.png)
+
+### Dashboard com sete painéis
+
+![Visão geral e navegação do dashboard](docs/dashboard-paineis-pizzas.png)
+
+### Modal de seleção de fundo
+
+![Busca e seleção de fundo](docs/filtro-fundo-desktop.png)
+
+[Ver a interface no celular](docs/interface.md#navegação-e-memória) · [Ver os sete gráficos](docs/dashboard.md#capturas)
 
 ## Como rodar
 
@@ -121,7 +134,7 @@ npm run build --prefix front
 ```text
 back/       API, regras de análise e dados
 front/      Interface web em React e Vite
-docs/       Documentação de rotas e comparação com o resultado esperado
+docs/       Guias, capturas, histórico de prompts, rotas e comparação de resultados
 ```
 
 ## Rodar do zero com Docker Compose

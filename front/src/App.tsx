@@ -6,6 +6,7 @@ import './InvoicesView.css'
 import RejectionPreview from './RejectionPreview'
 import { LandingIntro, OperationSteps } from './Landing'
 import Dashboard from './Dashboard'
+import FundPicker from './FundPicker'
 import { cleanHistory, estimateAnalysis, readAnalysisHistory, saveAnalysisHistory } from './uploadEstimates'
 import type { DurationEstimate } from './uploadEstimates'
 import type { DashboardPanel } from './useDashboardPanels'
@@ -254,7 +255,7 @@ function App() {
             <span className="filters-toggle-label">Filtros</span> {activeFilterCount > 0 && <span className="active-filter-count" aria-hidden="true">{activeFilterCount}</span>}
             <svg className="filters-chevron" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
           </button><div id="invoices-filters" className="listing-filters" aria-label="Filtros da listagem" hidden={!filtersOpen}>
-            <label>Fundo<select value={selectedFund} onChange={event => setSelectedFund(event.target.value)}><option value="">Todos os fundos</option>{fundOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+            <FundPicker label="Fundo" options={fundOptions} value={selectedFund} onChange={setSelectedFund} />
             <label>Cedente<input type="search" placeholder="Buscar pelo nome do cedente" value={cedenteFilter} onChange={event => setCedenteFilter(event.target.value)} /></label>
             <label>Sacado<input type="search" placeholder="Buscar pelo nome ou CNPJ" value={sacadoFilter} onChange={event => setSacadoFilter(event.target.value)} /></label>
             <button type="button" disabled={!selectedFund && !cedenteFilter && !sacadoFilter} onClick={() => { setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('') }}>Limpar filtros</button>

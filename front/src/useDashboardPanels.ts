@@ -28,7 +28,15 @@ export function useDashboardPanels(activePanel: DashboardPanel, onPanelChange: (
       if (event.ctrlKey || event.metaKey || event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return
       if (event.target instanceof Element && event.target.closest('select,input,textarea')) return
       const region = scrollRegion(event.target)
-      if (region && (event.deltaY > 0 ? region.scrollTop + region.clientHeight < region.scrollHeight - 2 : region.scrollTop > 2)) return
+      if (region) {
+        wheel.current.value = 0
+        if (region.dataset.dashboardScroll === 'horizontal' && region.scrollWidth > region.clientWidth) {
+          event.preventDefault()
+          const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? region.clientWidth : 1
+          region.scrollLeft += event.deltaY * unit
+        }
+        return
+      }
       event.preventDefault()
       const now = performance.now()
       if (now < lockedUntil.current) return

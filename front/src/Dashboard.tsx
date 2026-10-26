@@ -3,6 +3,7 @@ import { getReasonTitle, uniqueReasons } from './reasons'
 import { useDashboardPanels } from './useDashboardPanels'
 import type { DashboardPanel } from './useDashboardPanels'
 import './Dashboard.css'
+import FundPicker from './FundPicker'
 import { FinancialPanel, MaturityPanel, ConcentrationPanel, ReasonImpactPanel, PricingPanel } from './DashboardInsights'
 import { dashboardPanels } from './dashboardPanels'
 import type { DashboardRow } from './dashboardMetrics'
@@ -45,7 +46,7 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
   return <article className="dashboard-chart fund-columns"><h3>Notas aprovadas e não aprovadas por fundo</h3>
     <div className="fund-bars-legend"><span><i style={{ background: '#2DAA82' }} />Aprovadas</span><span><i style={{ background: '#C35A50' }} />Não aprovadas</span></div>
     <p className="dashboard-note">Quantidade de notas · as colunas comparam os resultados de cada fundo.</p>
-    {funds.length ? <div className="fund-columns-scroll" data-dashboard-scroll tabIndex={0} role="region" aria-label="Comparativo entre fundos, com rolagem horizontal">
+    {funds.length ? <div className="fund-columns-scroll" data-dashboard-scroll="horizontal" tabIndex={0} role="region" aria-label="Comparativo entre fundos, com rolagem horizontal">
       <svg style={{ minWidth: width }} width={width} height="380" viewBox={`0 0 ${width} 380`} role="img" aria-label={`Comparativo entre fundos. ${funds.map(fund => `${fund.name} ${fund.document}: ${number.format(fund.approved)} aprovadas e ${number.format(fund.rejected)} não aprovadas`).join('; ')}`}>
         {[0, 1, 2, 3, 4].map(tick => {
           const value = tickStep * tick
@@ -118,7 +119,7 @@ function Dashboard({ rows, selectedFund, onFundChange, activePanel, onPanelChang
   return <section ref={containerRef} className="dashboard dashboard-experience" aria-labelledby="dashboard-title" onKeyDown={onKeyDown} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
     <header className="dashboard-header">
       <div><h2 id="dashboard-title">Dashboard da análise</h2><p>{number.format(activePanel === 1 ? rows.length : total)} notas · {activePanel !== 1 && selectedFund ? 'fundo selecionado' : `${funds.length} ${funds.length === 1 ? 'fundo' : 'fundos'} no arquivo`}</p></div>
-      <label>{activePanel === 1 ? 'Comparativo de todos os fundos' : 'Filtrar por fundo'}<select aria-label="Filtrar por fundo" disabled={activePanel === 1} value={activePanel === 1 ? '' : selectedFund} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      <FundPicker options={funds} label={activePanel === 1 ? 'Comparativo de todos os fundos' : 'Filtrar por fundo'} disabled={activePanel === 1} value={activePanel === 1 ? '' : selectedFund} onChange={onFundChange} />
     </header>
     <div className="dashboard-stage" tabIndex={0} role="region" aria-label="Gráficos da análise. Use as setas para cima e para baixo para trocar de painel." data-panel-index={activePanel}>
       <section id="dashboard-overview" className={`dashboard-panel${activePanel === 0 ? ' is-active' : ''}`} data-position={activePanel === 0 ? 'current' : 'before'} aria-label="Visão geral em gráficos de pizza" aria-hidden={activePanel !== 0} ref={element => { if (element) element.inert = activePanel !== 0 }}>

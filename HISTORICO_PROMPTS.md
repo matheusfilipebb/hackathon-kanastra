@@ -9,6 +9,7 @@ Aqui estão reunidos os históricos de prompts do projeto, separados por assunto
 - [Desenvolvimento do backend](#desenvolvimento-do-backend)
 - [Docker Compose e Cloudflare Tunnel](#docker-compose-e-cloudflare-tunnel)
 - [Log de prompts — 2026-10-24](#log-de-prompts--2026-10-24)
+- [REA, Notas e Dashboard — este chat](docs/prompts/chat-interface.md)
 
 
 ---
@@ -530,3 +531,10 @@ Sessão do workspace `c:\Users\mathe\Downloads\hackathon`.
 
 27. **Remover recolher/expandir do dashboard**
     > Remova a parte de recolher e expandir dashboard.
+
+
+---
+
+## REA, Notas e Dashboard — este chat
+
+Os 35 pedidos deste chat, em ordem e com a redação original, estão em [docs/prompts/chat-interface.md](docs/prompts/chat-interface.md). O registro inclui os seis anexos de referência, as alterações da página inicial, das Notas e dos sete painéis do dashboard, estimativa de tempo, modal de fundos e o pedido de atualização desta documentação. As capturas atuais da aplicação estão no [guia da interface](docs/interface.md).

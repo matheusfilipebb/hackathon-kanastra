@@ -14,7 +14,7 @@ As explicações de vencimento respeitam a referência histórica da API: no CSV
 
 ![Explicações da nota no celular](notas-nao-aprovadas-mobile.png)
 
-As capturas usam dados de exemplo e respostas controladas para demonstrar os estados da interface.
+Capturas renovadas em 26/10/2026 com o layout atual de Notas. Usam 120 notas sintéticas e respostas controladas para demonstrar os estados da interface; não representam uma carteira real. Consulte o [guia e catálogo de capturas](interface.md) para o fluxo completo.
 
 ## Verificação
 
