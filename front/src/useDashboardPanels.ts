@@ -1,27 +1,24 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { KeyboardEvent, TouchEvent } from 'react'
 
-type Panel = 0 | 1
+export type DashboardPanel = 0 | 1
 
 function scrollRegion(target: EventTarget | null) {
   return target instanceof Element ? target.closest<HTMLElement>('[data-dashboard-scroll]') : null
 }
 
-export function useDashboardPanels() {
+export function useDashboardPanels(activePanel: DashboardPanel, onPanelChange: (panel: DashboardPanel) => void) {
   const containerRef = useRef<HTMLElement>(null)
-  const [activePanel, setActivePanel] = useState<Panel>(0)
-  const current = useRef<Panel>(0)
   const lockedUntil = useRef(0)
   const wheel = useRef({ value: 0, at: 0 })
   const touch = useRef<{ x: number; y: number; blocked: boolean } | null>(null)
 
-  const setPanel = useCallback((panel: Panel) => {
-    if (panel === current.current) return
-    current.current = panel
+  const setPanel = useCallback((panel: DashboardPanel) => {
+    if (panel === activePanel) return
     lockedUntil.current = performance.now() + 650
     wheel.current.value = 0
-    setActivePanel(panel)
-  }, [])
+    onPanelChange(panel)
+  }, [activePanel, onPanelChange])
 
   useEffect(() => {
     const container = containerRef.current

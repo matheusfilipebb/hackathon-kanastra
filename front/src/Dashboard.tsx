@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 import { getReasonTitle, uniqueReasons } from './reasons'
 import { useDashboardPanels } from './useDashboardPanels'
+import type { DashboardPanel } from './useDashboardPanels'
 import './Dashboard.css'
 
 type Row = { fundo: string; fundoDocumento: string; aprovado: boolean; motivos: string[] }
@@ -66,8 +67,8 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
   </article>
 }
 
-function Dashboard({ rows, selectedFund, onFundChange }: { rows: Row[]; selectedFund: string; onFundChange: (fund: string) => void }) {
-  const { containerRef, activePanel, setPanel, onKeyDown, onTouchStart, onTouchEnd } = useDashboardPanels()
+function Dashboard({ rows, selectedFund, onFundChange, activePanel, onPanelChange }: { rows: Row[]; selectedFund: string; onFundChange: (fund: string) => void; activePanel: DashboardPanel; onPanelChange: (panel: DashboardPanel) => void }) {
+  const { containerRef, setPanel, onKeyDown, onTouchStart, onTouchEnd } = useDashboardPanels(activePanel, onPanelChange)
   const funds = useMemo(() => {
     const grouped = new Map<string, string>()
     for (const row of rows) grouped.set(row.fundoDocumento || row.fundo, `${row.fundo}${row.fundoDocumento ? ` · ${row.fundoDocumento}` : ''}`)
@@ -106,7 +107,7 @@ function Dashboard({ rows, selectedFund, onFundChange }: { rows: Row[]; selected
   const total = summary.approved + summary.rejected
   return <section ref={containerRef} className="dashboard dashboard-experience" aria-labelledby="dashboard-title" onKeyDown={onKeyDown} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
     <header className="dashboard-header">
-      <div><p className="eyebrow">VISÃO DA CARTEIRA</p><h2 id="dashboard-title">Dashboard da análise</h2><p>{number.format(activePanel === 0 ? total : rows.length)} notas · {activePanel === 0 && selectedFund ? 'fundo selecionado' : `${funds.length} ${funds.length === 1 ? 'fundo' : 'fundos'} no arquivo`}</p></div>
+      <div><h2 id="dashboard-title">Dashboard da análise</h2><p>{number.format(activePanel === 0 ? total : rows.length)} notas · {activePanel === 0 && selectedFund ? 'fundo selecionado' : `${funds.length} ${funds.length === 1 ? 'fundo' : 'fundos'} no arquivo`}</p></div>
       <label>{activePanel === 0 ? 'Filtrar visão geral por fundo' : 'Comparativo de todos os fundos'}<select aria-label="Filtrar por fundo" disabled={activePanel === 1} value={activePanel === 0 ? selectedFund : ''} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
     </header>
     <div className="dashboard-stage" tabIndex={0} role="region" aria-label="Gráficos da análise. Use as setas para cima e para baixo para trocar de painel." data-panel-index={activePanel}>

@@ -1,4 +1,4 @@
-import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import './Landing.css'
 import './RejectionReasons.css'
@@ -6,6 +6,7 @@ import './InvoicesView.css'
 import RejectionPreview from './RejectionPreview'
 import { LandingIntro, OperationSteps } from './Landing'
 import Dashboard from './Dashboard'
+import type { DashboardPanel } from './useDashboardPanels'
 import AnalysisNavigation from './AnalysisNavigation'
 import { requestApi, uploadCsv } from './api'
 import { useApiHealth } from './useApiHealth'
@@ -74,6 +75,7 @@ function evaluate(invoices: Invoice[]): Result[] {
 function App() {
   const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY > 48)
   const [activeView, setActiveView] = useState<'dashboard' | 'notas'>('notas')
+  const [dashboardPanel, setDashboardPanel] = useState<DashboardPanel>(0)
   const [search, setSearch] = useState({ cedente: '', sacado: '' })
   const [selectedFund, setSelectedFund] = useState('')
   const [cedenteFilter, setCedenteFilter] = useState('')
@@ -94,6 +96,7 @@ function App() {
   const { loading: apiLoading, online: apiOnline } = useApiHealth(API_URL)
   const inputRef = useRef<HTMLInputElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
+  const tableScrollPosition = useRef({ top: 0, left: 0 })
   const processingFile = useRef(false)
   useEffect(() => {
     let frame = 0
@@ -116,7 +119,20 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [cedenteFilter, sacadoFilter])
   useEffect(() => { setCurrentPage(1) }, [filter, results, selectedFund, search])
-  useEffect(() => { if (tableRef.current) tableRef.current.scrollTop = 0 }, [currentPage, filter, selectedFund, search])
+  useEffect(() => { setDashboardPanel(0) }, [results])
+  useLayoutEffect(() => {
+    if (activeView === 'notas' && tableRef.current) {
+      tableRef.current.scrollTop = tableScrollPosition.current.top
+      tableRef.current.scrollLeft = tableScrollPosition.current.left
+    }
+  }, [activeView])
+  useEffect(() => {
+    tableScrollPosition.current = { top: 0, left: 0 }
+    if (tableRef.current) {
+      tableRef.current.scrollTop = 0
+      tableRef.current.scrollLeft = 0
+    }
+  }, [currentPage, filter, results, selectedFund, search])
   const processJson = async (text: string) => {
     try {
       const parsed = JSON.parse(text)
@@ -194,6 +210,8 @@ function App() {
     setSearch({ cedente: '', sacado: '' })
     setFilter('todas')
     setCurrentPage(1)
+    setDashboardPanel(0)
+    tableScrollPosition.current = { top: 0, left: 0 }
     setActiveView('notas')
     if (inputRef.current) inputRef.current.value = ''
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -223,7 +241,7 @@ function App() {
         {results.length === 0 && !isLoading && <LandingIntro />}
         <section className="workspace-grid"><div className="left-column">
           {results.length === 0 && !isLoading && <div className="upload-card" id="analise"><div className="section-heading"><div><span className="step">01</span><div><p className="eyebrow">COMECE POR AQUI</p><h2>Analise sua carteira de recebíveis</h2><p>Envie um arquivo para validar notas e consultar a precificação sugerida.</p></div></div><div className="upload-actions"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar regras <span aria-hidden="true">↗</span></button></div></div><div className={`drop-zone ${isDragging ? 'dragging' : ''}`} onClick={event => { if (event.target !== inputRef.current) inputRef.current?.click() }} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}><input ref={inputRef} type="file" accept=".csv,.json" onChange={onInputChange} hidden /><div className="upload-icon">↑</div><h3>Arraste e solte seu arquivo aqui</h3><p>ou <button className="link-button" type="button" onClick={event => { event.stopPropagation(); inputRef.current?.click() }}>selecione no computador</button></p><small>CSV ou JSON · até 50 MiB</small></div>{error && <div className="error-message" role="alert">{error}</div>}<div className="upload-footnote" id="seguranca"><span className="shield-icon">✓</span><p><strong>Seus dados, sob controle.</strong><br />A análise segue os validadores configurados para sua operação.</p><button type="button" onClick={() => setValidatorsOpen(true)}>Revisar regras <span aria-hidden="true">→</span></button></div></div>}
-          {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} />}</section>}
+          {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} activePanel={dashboardPanel} onPanelChange={setDashboardPanel} />}</section>}
           {isLoading ? (uploadProgress ? <UploadLoading progress={uploadProgress} startedAt={uploadStartedAt} estimatedProcessingMs={estimatedProcessingMs} /> : <div className="loading-state" role="status"><span className="loading-spinner" /><strong>Salvando configuração...</strong></div>) : results.length > 0 && <section id="invoices-view" aria-label="Listagem de notas fiscais" hidden={activeView !== 'notas'}>{activeView === 'notas' && <div className="results-section"><div className={`results-controls${filtersOpen ? ' results-controls--filters-open' : ''}`}><div className="results-header"><div><h2>Notas processadas</h2><p className="invoice-table-hint">Abra uma nota para ver os detalhes.</p></div></div><button type="button" className={`results-filters-toggle${activeFilterCount ? ' has-active-filters' : ''}`} aria-label={activeFilterCount ? `Filtros: ${activeFilterCount} ${activeFilterCount === 1 ? 'ativo' : 'ativos'}` : 'Filtros'} aria-expanded={filtersOpen} aria-controls="invoices-filters" onClick={() => setFiltersOpen(open => !open)}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
             <span className="filters-toggle-label">Filtros</span> {activeFilterCount > 0 && <span className="active-filter-count" aria-hidden="true">{activeFilterCount}</span>}
@@ -233,7 +251,7 @@ function App() {
             <label>Cedente<input type="search" placeholder="Buscar pelo nome do cedente" value={cedenteFilter} onChange={event => setCedenteFilter(event.target.value)} /></label>
             <label>Sacado<input type="search" placeholder="Buscar pelo nome ou CNPJ" value={sacadoFilter} onChange={event => setSacadoFilter(event.target.value)} /></label>
             <button type="button" disabled={!selectedFund && !cedenteFilter && !sacadoFilter} onClick={() => { setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('') }}>Limpar filtros</button>
-          </div><div className="metrics"><div><span>Total analisado</span><strong>{listResults.length.toLocaleString('pt-BR')}</strong></div><div className="metric-approved"><span>Aprovadas</span><strong>{approved.toLocaleString('pt-BR')}</strong><small>{listResults.length ? Math.round(approved / listResults.length * 100) : 0}% do lote</small></div><div className="metric-rejected"><span>Não aprovadas</span><strong>{rejected.toLocaleString('pt-BR')}</strong><small>{listResults.length ? Math.round(rejected / listResults.length * 100) : 0}% do lote</small></div><div><span>Valor total</span><strong>{currency.format(totalValue)}</strong></div></div></div><div className="results-table-panel"><div className="table-toolbar"><div className="tabs">{(['todas', 'aprovadas', 'reprovadas'] as const).map((tab) => <button key={tab} className={filter === tab ? 'active' : ''} onClick={() => setFilter(tab)}>{tab === 'reprovadas' ? 'Não aprovadas' : tab[0].toUpperCase() + tab.slice(1)} <span>{(tab === 'todas' ? listResults.length : tab === 'aprovadas' ? approved : rejected).toLocaleString('pt-BR')}</span></button>)}</div><p className="search-feedback" role="status">{cedenteFilter !== search.cedente || sacadoFilter !== search.sacado ? 'Atualizando busca...' : `${matchingResults.length.toLocaleString('pt-BR')} notas encontradas`}</p></div><div ref={tableRef} className="table-wrap" role="region" aria-label="Tabela de notas fiscais" tabIndex={0}><table><thead><tr><th>Nota fiscal</th><th>Sacado</th><th>Valor</th><th>Simulação recebível</th><th>Status</th><th>Motivo da não aprovação</th><th>Vencimento</th></tr></thead><tbody>{filteredResults.length ? filteredResults.map((item) => <tr key={`${item.id}-${item.linha ?? item.vencimento}`} className="invoice-row" tabIndex={0} aria-label={`Ver dados completos da nota ${item.id}`} onClick={() => setSelectedInvoice(item)} onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedInvoice(item) } }}><td><strong>{item.id}</strong><small>{item.tipo}</small><small>Cedente: {item.cedente}</small></td><td><strong>{item.sacado}</strong><small>{item.cnpj || 'CNPJ não informado'}</small></td><td>{currency.format(item.valor)}</td><td>{item.precificacao ? <div className="simulation"><strong>{currency.format(item.precificacao.valor_liquido)}</strong><small>líquido · desconto {currency.format(item.precificacao.valor_desconto)}</small></div> : '—'}</td><td><span className={`status ${item.aprovado ? 'approved' : 'rejected'}`}><span />{item.aprovado ? 'Aprovada' : 'Não aprovada'}</span></td><td className="reason-cell">{item.aprovado ? <span className="reason-passed">Todos os critérios atendidos</span> : <RejectionPreview invoiceId={item.id} reasons={item.motivos} onOpen={() => setSelectedInvoice(item)} />}</td><td>{item.vencimento ? item.vencimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1') : '—'}</td></tr>) : <tr><td className="empty-state" colSpan={7}>Nenhuma nota encontrada para este filtro.</td></tr>}</tbody></table></div><div className="pagination" aria-label="Paginação das notas processadas"><span>{matchingResults.length ? `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, matchingResults.length)} de ${matchingResults.length}` : '0 notas'}</span><div><button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Anterior</button><strong>Página {currentPage} de {totalPages}</strong><button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Próxima</button></div></div></div></div>}</section>}
+          </div><div className="metrics"><div><span>Total analisado</span><strong>{listResults.length.toLocaleString('pt-BR')}</strong></div><div className="metric-approved"><span>Aprovadas</span><strong>{approved.toLocaleString('pt-BR')}</strong><small>{listResults.length ? Math.round(approved / listResults.length * 100) : 0}% do lote</small></div><div className="metric-rejected"><span>Não aprovadas</span><strong>{rejected.toLocaleString('pt-BR')}</strong><small>{listResults.length ? Math.round(rejected / listResults.length * 100) : 0}% do lote</small></div><div><span>Valor total</span><strong>{currency.format(totalValue)}</strong></div></div></div><div className="results-table-panel"><div className="table-toolbar"><div className="tabs">{(['todas', 'aprovadas', 'reprovadas'] as const).map((tab) => <button key={tab} className={filter === tab ? 'active' : ''} onClick={() => setFilter(tab)}>{tab === 'reprovadas' ? 'Não aprovadas' : tab[0].toUpperCase() + tab.slice(1)} <span>{(tab === 'todas' ? listResults.length : tab === 'aprovadas' ? approved : rejected).toLocaleString('pt-BR')}</span></button>)}</div><p className="search-feedback" role="status">{cedenteFilter !== search.cedente || sacadoFilter !== search.sacado ? 'Atualizando busca...' : `${matchingResults.length.toLocaleString('pt-BR')} notas encontradas`}</p></div><div ref={tableRef} onScroll={event => { tableScrollPosition.current = { top: event.currentTarget.scrollTop, left: event.currentTarget.scrollLeft } }} className="table-wrap" role="region" aria-label="Tabela de notas fiscais" tabIndex={0}><table><thead><tr><th>Nota fiscal</th><th>Sacado</th><th>Valor</th><th>Simulação recebível</th><th>Status</th><th>Motivo da não aprovação</th><th>Vencimento</th></tr></thead><tbody>{filteredResults.length ? filteredResults.map((item) => <tr key={`${item.id}-${item.linha ?? item.vencimento}`} className="invoice-row" tabIndex={0} aria-label={`Ver dados completos da nota ${item.id}`} onClick={() => setSelectedInvoice(item)} onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedInvoice(item) } }}><td><strong>{item.id}</strong><small>{item.tipo}</small><small>Cedente: {item.cedente}</small></td><td><strong>{item.sacado}</strong><small>{item.cnpj || 'CNPJ não informado'}</small></td><td>{currency.format(item.valor)}</td><td>{item.precificacao ? <div className="simulation"><strong>{currency.format(item.precificacao.valor_liquido)}</strong><small>líquido · desconto {currency.format(item.precificacao.valor_desconto)}</small></div> : '—'}</td><td><span className={`status ${item.aprovado ? 'approved' : 'rejected'}`}><span />{item.aprovado ? 'Aprovada' : 'Não aprovada'}</span></td><td className="reason-cell">{item.aprovado ? <span className="reason-passed">Todos os critérios atendidos</span> : <RejectionPreview invoiceId={item.id} reasons={item.motivos} onOpen={() => setSelectedInvoice(item)} />}</td><td>{item.vencimento ? item.vencimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1') : '—'}</td></tr>) : <tr><td className="empty-state" colSpan={7}>Nenhuma nota encontrada para este filtro.</td></tr>}</tbody></table></div><div className="pagination" aria-label="Paginação das notas processadas"><span>{matchingResults.length ? `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, matchingResults.length)} de ${matchingResults.length}` : '0 notas'}</span><div><button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Anterior</button><strong>Página {currentPage} de {totalPages}</strong><button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Próxima</button></div></div></div></div>}</section>}
 
         </div></section>
         {results.length === 0 && !isLoading && <OperationSteps />}
