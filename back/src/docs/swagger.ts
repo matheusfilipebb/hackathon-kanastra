@@ -13,6 +13,7 @@ export async function registerDocumentation(server: FastifyInstance) {
           + 'As datas são avaliadas em relação à aquisição de cada nota no estoque histórico.',
       },
       tags: [
+        { name: 'Saúde', description: 'Disponibilidade da API.' },
         { name: 'Recebíveis', description: 'Envio de notas em CSV.' },
         { name: 'Validadores', description: 'Consulta e atualização da configuração persistida em JSON.' },
       ],

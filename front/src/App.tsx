@@ -1,13 +1,17 @@
 import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
+import './Landing.css'
+import { LandingIntro, OperationSteps } from './Landing'
 import Dashboard from './Dashboard'
 import { requestApi, uploadCsv } from './api'
+import { useApiHealth } from './useApiHealth'
 import type { UploadProgress } from './api'
 import UploadLoading from './UploadLoading'
 import { indexInvoices, queryInvoices } from './listing'
 import ValidatorsModal from './ValidatorsModal'
 import InvoiceModal from './InvoiceModal'
 import antecipaLogo from './assets/antecipe-logo-branco-sem-fundo.svg'
+import antecipeLogoGreen from './assets/antecipe-logo-verde-sem-fundo.svg'
 
 type Invoice = { cedenteDocumento?: string; aquisicao?: string; linha?: number; situacaoCadastral?: string; fundo: string; fundoDocumento: string; id: string; sacado: string; cnpj: string; valor: number; vencimento: string; tipo: string; situacao: string; cedente: string }
 type Pricing = { prazo_dias: number; valor_nominal: number; valor_desconto: number; valor_liquido: number }
@@ -64,6 +68,7 @@ function evaluate(invoices: Invoice[]): Result[] {
 }
 
 function App() {
+  const [headerScrolled, setHeaderScrolled] = useState(() => window.scrollY > 48)
   const [activeView, setActiveView] = useState<'dashboard' | 'notas'>('notas')
   const [search, setSearch] = useState({ cedente: '', sacado: '' })
   const [selectedFund, setSelectedFund] = useState('')
@@ -81,19 +86,24 @@ function App() {
   const [uploadStartedAt, setUploadStartedAt] = useState(0)
   const [estimatedProcessingMs, setEstimatedProcessingMs] = useState<number | null>(null)
   const lastAnalysis = useRef<{ bytes: number; ms: number } | null>(null)
-  const [apiLoading, setApiLoading] = useState(true)
-  const [apiOnline, setApiOnline] = useState(false)
+  const { loading: apiLoading, online: apiOnline } = useApiHealth(API_URL)
   const inputRef = useRef<HTMLInputElement>(null)
   const processingFile = useRef(false)
   useEffect(() => {
-    const controller = new AbortController()
-    const timeout = window.setTimeout(() => controller.abort(), 10000)
-    let active = true
-    requestApi(`${API_URL}/validadores`, { signal: controller.signal }, online => { if (active) setApiOnline(online) })
-      .then(response => { if (active) setApiOnline(response.ok) })
-      .catch(() => { if (active) setApiOnline(false) })
-      .finally(() => { window.clearTimeout(timeout); if (active) setApiLoading(false) })
-    return () => { active = false; controller.abort(); window.clearTimeout(timeout) }
+    let frame = 0
+    const updateHeader = () => {
+      if (frame) return
+      frame = window.requestAnimationFrame(() => {
+        setHeaderScrolled(window.scrollY > 48)
+        frame = 0
+      })
+    }
+    window.addEventListener('scroll', updateHeader, { passive: true })
+    updateHeader()
+    return () => {
+      window.removeEventListener('scroll', updateHeader)
+      window.cancelAnimationFrame(frame)
+    }
   }, [])
   useEffect(() => {
     const timer = window.setTimeout(() => setSearch({ cedente: cedenteFilter, sacado: sacadoFilter }), 200)
@@ -105,10 +115,10 @@ function App() {
       const parsed = JSON.parse(text)
       if (!Array.isArray(parsed) && parsed?.fundo && Array.isArray(parsed?.validadores) && parsed?.precificacao) {
         setIsLoading(true)
-        const response = await requestApi(`${API_URL}/validadores`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) }, setApiOnline)
+        const response = await requestApi(`${API_URL}/validadores`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) })
         const responseBody = await response.json().catch(() => null)
         if (!response.ok) throw new Error(responseBody?.message ?? `A API respondeu com status ${response.status}.`)
-        setCurrentPage(1); setApiOnline(true); setError(''); return
+        setCurrentPage(1); setError(''); return
       }
       const rows = Array.isArray(parsed) ? parsed : parsed.notas_fiscais ?? parsed.notas ?? parsed.data ?? []
       if (!Array.isArray(rows) || rows.length === 0) throw new Error('JSON inválido. Envie uma lista de notas ou a configuração completa dos validadores.')
@@ -130,14 +140,14 @@ function App() {
         if (progress.stage === 'processing') analysisStartedAt = progress.stageStartedAt
         if (progress.stage === 'receiving' && analysisStartedAt) analysisMs = progress.stageStartedAt - analysisStartedAt
         setUploadProgress(progress)
-      }, setApiOnline)
+      })
       if (!response.ok) { const detail = await response.json().catch(() => null); throw new Error(detail?.message ?? `A API respondeu com status ${response.status}.`) }
       const apiRows = await response.json() as ApiResult[]
       if (!Array.isArray(apiRows)) throw new Error('A API retornou um resultado inválido. Tente enviar o arquivo novamente.')
       setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('')
       setResults(apiRows.map((item) => { const local = localRows[item.linha - 2] ?? localRows.find((row) => row.id === item.id); return { ...(local ?? { fundo: 'Fundo não informado', fundoDocumento: '', id: item.id, sacado: 'Dados retornados pela API', cnpj: '', valor: 0, vencimento: '', tipo: '', situacao: '', cedente: '' }), linha: item.linha, aprovado: item.status === 'APROVADO', motivos: item.barrado_por ?? [], precificacao: item.precificacao } }))
       if (analysisMs > 0 && file.size > 0) lastAnalysis.current = { bytes: file.size, ms: analysisMs }
-      setCurrentPage(1); setApiOnline(true)
+      setCurrentPage(1)
     } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.') } finally { setIsLoading(false); setUploadProgress(null); processingFile.current = false }
   }
   const handleFile = (file?: File) => {
@@ -183,11 +193,20 @@ function App() {
     <div className="app-shell">
       {validatorsOpen && <ValidatorsModal apiUrl={API_URL} onClose={() => setValidatorsOpen(false)} />}
       {selectedInvoice && <InvoiceModal invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} />}
-      <header className="topbar"><img className="brand-logo" src={antecipaLogo} alt="antecipa" /><div className="topbar-right"><span className={`api-status ${apiLoading ? 'loading' : apiOnline ? 'online' : 'offline'}`}>{!apiLoading && <span className="live-dot" />} {apiLoading ? 'Conectando à API...' : apiOnline ? 'API conectada' : 'API offline'}</span></div></header>
-      <main className="main-content">
-        {results.length === 0 && !isLoading && <section className="intro"><div><h1>Validação de notas fiscais</h1><p className="subtitle">Envie o CSV com as Notas Fiscais e o sistema fará a análise</p></div></section>}
+      <header className={`topbar${headerScrolled || results.length > 0 || isLoading ? ' topbar--solid' : ''}`}>
+        <div className="brand-lockup">
+          <img className="brand-logo brand-logo--light" src={antecipaLogo} alt="Antecipe" />
+          <img className="brand-logo brand-logo--dark" src={antecipeLogoGreen} alt="" aria-hidden="true" />
+        </div>
+        <nav className="product-nav" aria-label="Navegação principal">
+          {results.length === 0 && !isLoading ? <><a href="#analise">Analisar carteira</a><a href="#como-funciona">Como funciona</a><button type="button" onClick={() => setValidatorsOpen(true)}>Regras da operação</button></> : <><button type="button" disabled={isLoading} onClick={() => setActiveView('notas')}>Notas fiscais</button><button type="button" disabled={isLoading} onClick={() => setActiveView('dashboard')}>Dashboard</button><button type="button" onClick={() => setValidatorsOpen(true)}>Regras da operação</button></>}
+        </nav>
+        <div className="topbar-right"><span role="status" className={`api-status ${apiLoading ? 'loading' : apiOnline ? 'online' : 'offline'}`}><span className="live-dot" />{apiLoading ? 'Conectando…' : apiOnline ? 'Sistema disponível' : 'Sistema indisponível'}</span></div>
+      </header>
+      <main className={`main-content${results.length > 0 || isLoading ? ' main-content--workspace' : ''}`}>
+        {results.length === 0 && !isLoading && <LandingIntro />}
         <section className="workspace-grid"><div className="left-column">
-          {results.length === 0 && !isLoading && <div className="upload-card"><div className="section-heading"><div><div><h2>Adicione seu arquivo CSV</h2><p>O arquivo deve conter as notas que serão analisadas</p></div></div><div className="upload-actions"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar validadores</button></div></div><div className={`drop-zone ${isDragging ? 'dragging' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}><input ref={inputRef} type="file" accept=".csv,.json" onChange={onInputChange} hidden /><div className="upload-icon">↑</div><h3>Arraste e solte seu arquivo aqui</h3><p>ou <button className="link-button" type="button">selecione no computador</button></p></div>{error && <div className="error-message">{error}</div>}</div>}
+          {results.length === 0 && !isLoading && <div className="upload-card" id="analise"><div className="section-heading"><div><span className="step">01</span><div><p className="eyebrow">COMECE POR AQUI</p><h2>Analise sua carteira de recebíveis</h2><p>Envie um arquivo para validar notas e consultar a precificação sugerida.</p></div></div><div className="upload-actions"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar regras <span aria-hidden="true">↗</span></button></div></div><div className={`drop-zone ${isDragging ? 'dragging' : ''}`} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}><input ref={inputRef} type="file" accept=".csv,.json" onChange={onInputChange} hidden /><div className="upload-icon">↑</div><h3>Arraste e solte seu arquivo aqui</h3><p>ou <button className="link-button" type="button" onClick={() => inputRef.current?.click()}>selecione no computador</button></p><small>CSV ou JSON · até 50 MiB</small></div>{error && <div className="error-message" role="alert">{error}</div>}<div className="upload-footnote" id="seguranca"><span className="shield-icon">✓</span><p><strong>Seus dados, sob controle.</strong><br />A análise segue os validadores configurados para sua operação.</p><button type="button" onClick={() => setValidatorsOpen(true)}>Revisar regras <span aria-hidden="true">→</span></button></div></div>}
           {!isLoading && results.length > 0 && <>
             <div className="analysis-view-heading"><div><p className="eyebrow">ANÁLISE CONCLUÍDA</p><h1>Resultado da análise</h1><p>Veja o resumo nos gráficos ou consulte cada nota fiscal.</p></div><button type="button" className="new-analysis-button" onClick={resetAnalysis}>Analisar novo CSV</button></div>
             <nav className="analysis-navigation" aria-label="Visualização dos resultados">
@@ -204,7 +223,9 @@ function App() {
           </div><p className="search-feedback" role="status">{cedenteFilter !== search.cedente || sacadoFilter !== search.sacado ? 'Atualizando busca...' : `${listResults.length.toLocaleString('pt-BR')} notas encontradas`}</p><div className="metrics"><div><span>Total analisado</span><strong>{listResults.length}</strong></div><div className="metric-approved"><span>Aprovadas</span><strong>{approved}</strong><small>{listResults.length ? Math.round(approved / listResults.length * 100) : 0}% do lote</small></div><div className="metric-rejected"><span>Reprovadas</span><strong>{rejected}</strong><small>{listResults.length ? Math.round(rejected / listResults.length * 100) : 0}% do lote</small></div><div><span>Valor total</span><strong>{currency.format(totalValue)}</strong></div></div><div className="table-toolbar"><div className="tabs">{(['todas', 'aprovadas', 'reprovadas'] as const).map((tab) => <button key={tab} className={filter === tab ? 'active' : ''} onClick={() => setFilter(tab)}>{tab[0].toUpperCase() + tab.slice(1)} <span>{tab === 'todas' ? listResults.length : tab === 'aprovadas' ? approved : rejected}</span></button>)}</div></div><div className="table-wrap"><table><thead><tr><th>Nota fiscal</th><th>Sacado</th><th>Valor</th><th>Simulação recebível</th><th>Status</th><th>Vencimento</th></tr></thead><tbody>{filteredResults.length ? filteredResults.map((item) => <tr key={`${item.id}-${item.linha ?? item.vencimento}`} className="invoice-row" tabIndex={0} aria-label={`Ver dados completos da nota ${item.id}`} onClick={() => setSelectedInvoice(item)} onKeyDown={event => { if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); setSelectedInvoice(item) } }}><td><strong>{item.id}</strong><small>{item.tipo}</small><small>Cedente: {item.cedente}</small></td><td><strong>{item.sacado}</strong><small>{item.cnpj || 'CNPJ não informado'}</small></td><td>{currency.format(item.valor)}</td><td>{item.precificacao ? <div className="simulation"><strong>{currency.format(item.precificacao.valor_liquido)}</strong><small>líquido · desconto {currency.format(item.precificacao.valor_desconto)}</small></div> : '—'}</td><td><span className={`status ${item.aprovado ? 'approved' : 'rejected'}`}><span />{item.aprovado ? 'Aprovada' : 'Reprovada'}</span></td><td>{item.vencimento ? item.vencimento.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1') : '—'}</td></tr>) : <tr><td className="empty-state" colSpan={6}>Nenhuma nota encontrada para este filtro.</td></tr>}</tbody></table></div></div>}</section>}
           {!isLoading && results.length > 0 && activeView === 'notas' && <div className="pagination" aria-label="Paginação das notas processadas"><span>{matchingResults.length ? `${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, matchingResults.length)} de ${matchingResults.length}` : '0 notas'}</span><div><button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Anterior</button><strong>Página {currentPage} de {totalPages}</strong><button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Próxima</button></div></div>}
         </div></section>
+        {results.length === 0 && !isLoading && <OperationSteps />}
       </main>
+      <footer className="app-footer"><span><strong>Antecipe.</strong> Inteligência para sua carteira de recebíveis.</span>{!isLoading && <a href="#analise" onClick={results.length > 0 ? resetAnalysis : undefined}>Iniciar uma análise ↗</a>}</footer>
     </div>
   )
 }

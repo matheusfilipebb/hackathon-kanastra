@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "widths": [
+    {
+      "width": 1440,
+      "inner": 1440,
+      "scroll": 1440
+    },
+    {
+      "width": 768,
+      "inner": 768,
+      "scroll": 768
+    },
+    {
+      "width": 390,
+      "inner": 390,
+      "scroll": 390
+    },
+    {
+      "width": 320,
+      "inner": 320,
+      "scroll": 320
+    }
+  ],
+  "uploadRows": 10,
+  "checks": [
+    "API conectada",
+    "links internos",
+    "modal de regras",
+    "seleção de arquivo",
+    "upload CSV pela API real",
+    "listagem de 10 notas",
+    "detalhes da nota",
+    "dashboard",
+    "nova análise",
+    "ausência de erros JavaScript"
+  ],
+  "pageErrors": []
+}

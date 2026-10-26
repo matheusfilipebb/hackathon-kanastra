@@ -4,6 +4,8 @@ Acesse a aplicação: [antecipe.alvtn.site](https://antecipe.alvtn.site/).
 
 Aplicação para analisar recebíveis e calcular a precificação sugerida para as notas aprovadas. O projeto contém um frontend em React/Vite e uma API em Node.js, TypeScript e Fastify.
 
+A atualização visual baseada na análise da Kanastra pelo REA está documentada em [docs/rea](docs/rea/README.md), com evidências, capturas de tela e resultados da verificação do frontend.
+
 ## Telas
 
 ### Página inicial
@@ -79,6 +81,7 @@ Com a API iniciada, consulte e teste os endpoints pela documentação Swagger em
 | Método | Rota | Descrição |
 | --- | --- | --- |
 | `POST` | `/recebiveis/upload` | Analisa um CSV e retorna o resultado por nota; as notas aprovadas incluem precificação sugerida. |
+| `GET` | `/health` | Confirma que a API está disponível. |
 | `GET` | `/validadores` | Consulta as regras e parâmetros de validação atuais. |
 | `PUT` | `/validadores` | Valida e salva a configuração completa dos validadores. |
 

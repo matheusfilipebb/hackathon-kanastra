@@ -19,11 +19,28 @@ Os exemplos de comandos abaixo consideram o terminal dentro de `back/`.
 | Método | Rota | Finalidade |
 | --- | --- | --- |
 | POST | `/recebiveis/upload` | Receber o CSV e calcular a classificação de cada nota. |
+| GET | `/health` | Verificar a disponibilidade da API. |
 | GET | `/validadores` | Consultar a configuração atual. |
 | PUT | `/validadores` | Validar e substituir a configuração completa. |
 | GET | `/docs` | Abrir a documentação interativa Swagger. |
 | GET | `/docs/json` | Obter a especificação OpenAPI em JSON. |
 | GET | `/docs/yaml` | Obter a especificação OpenAPI em YAML. |
+
+## GET /health
+
+Confirma que o processo da API está em execução e responde a requisições. Retorna HTTP `200`, `Cache-Control: no-store` e o corpo:
+
+```json
+{ "status": "ok" }
+```
+
+```bash
+curl http://localhost:3000/health
+```
+
+O frontend usa somente essa rota para o indicador de disponibilidade: consulta ao abrir a página e novamente 10 segundos após cada verificação. A API é considerada disponível apenas com HTTP 2xx e `status: "ok"`. Erro HTTP, falha de rede, resposta inválida ou timeout de 5 segundos marcam o sistema como indisponível. A recuperação é detectada pela consulta seguinte, sem recarregar a página.
+
+Essa verificação não lê os validadores e não executa análise de recebíveis. O Compose usa a mesma rota no healthcheck do backend.
 
 ## POST /recebiveis/upload
 

@@ -33,6 +33,7 @@ Com o servidor iniciado, acesse [Swagger UI](http://localhost:3000/docs) para co
 | Método | Rota | Descrição |
 | --- | --- | --- |
 | POST | `/recebiveis/upload` | Envia um CSV no campo `file` e recebe a análise calculada das notas. |
+| GET | `/health` | Confirma que a API está disponível. |
 | GET | `/validadores` | Consulta a configuração atual. |
 | PUT | `/validadores` | Valida e substitui a configuração completa. |
 
@@ -265,7 +266,7 @@ O Nginx entrega o frontend e remove o prefixo `/api/` ao encaminhar para o Fasti
 
 A imagem do backend compila TypeScript em uma etapa de build e executa apenas `dist/` e as dependências de produção, com usuário `node`. No Compose, o processo escuta em `0.0.0.0:3000` dentro do container; a porta publicada na máquina fica restrita a `127.0.0.1`.
 
-O Compose consulta `GET /validadores` como verificação de saúde do backend e só inicia o frontend depois que essa consulta passa. O conector do túnel espera o frontend estar saudável. A verificação confirma disponibilidade e leitura da configuração; não garante que um lote completo possa ser analisado.
+O Compose consulta `GET /health` como verificação de saúde do backend e só inicia o frontend depois que a rota retorna HTTP 200 e `{ "status": "ok" }`. O conector do túnel espera o frontend estar saudável. Essa rota confirma que a API está em execução e responde; não consulta arquivos de configuração nem garante que um lote completo possa ser analisado.
 
 Os comandos de instalação, execução local, Compose e Cloudflare estão no [README principal](../README.md).
 

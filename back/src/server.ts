@@ -4,6 +4,7 @@ import { registerResponseCompression } from './plugins-compression.js';
 import { registerDocumentation } from './docs/swagger.js';
 import { recebiveisRoutes } from './routes/recebiveis.routes.js';
 import { validadoresRoutes } from './routes/validadores.routes.js';
+import { healthRoutes } from './routes/health.routes.js';
 
 const server = Fastify({ logger: true });
 
@@ -25,6 +26,7 @@ try {
   });
   await registerResponseCompression(server);
   await registerDocumentation(server);
+  await server.register(healthRoutes);
   await server.register(recebiveisRoutes);
   await server.register(validadoresRoutes);
   await server.listen({

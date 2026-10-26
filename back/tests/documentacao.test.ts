@@ -5,11 +5,13 @@ import Fastify from 'fastify';
 import { registerDocumentation } from '../src/docs/swagger.js';
 import { recebiveisRoutes } from '../src/routes/recebiveis.routes.js';
 import { validadoresRoutes } from '../src/routes/validadores.routes.js';
+import { healthRoutes } from '../src/routes/health.routes.js';
 
-test('Swagger documenta as três operações e preserva o upload multipart', async t => {
+test('Swagger documenta as operações e preserva o upload multipart e o contrato de saúde', async t => {
   const app = Fastify();
   t.after(() => app.close());
   await registerDocumentation(app);
+  await app.register(healthRoutes);
   await app.register(recebiveisRoutes);
   await app.register(validadoresRoutes);
 
@@ -20,6 +22,11 @@ test('Swagger documenta as três operações e preserva o upload multipart', asy
   assert.equal(response.statusCode, 200);
   const spec = response.json();
   assert.equal(spec.openapi, '3.0.3');
+  assert.ok(spec.paths['/health'].get.responses['200']);
+  const health = await app.inject({ method: 'GET', url: '/health' });
+  assert.equal(health.statusCode, 200);
+  assert.equal(health.headers['cache-control'], 'no-store');
+  assert.deepEqual(health.json(), { status: 'ok' });
   assert.ok(spec.paths['/validadores'].get.responses['200']);
   assert.ok(spec.paths['/validadores'].put.responses['400']);
   assert.ok(spec.paths['/validadores'].put.requestBody.content['application/json'].example);
