@@ -6,6 +6,8 @@ import './InvoicesView.css'
 import RejectionPreview from './RejectionPreview'
 import { LandingIntro, OperationSteps } from './Landing'
 import Dashboard from './Dashboard'
+import { cleanHistory, estimateAnalysis, readAnalysisHistory, saveAnalysisHistory } from './uploadEstimates'
+import type { DurationEstimate } from './uploadEstimates'
 import type { DashboardPanel } from './useDashboardPanels'
 import AnalysisNavigation from './AnalysisNavigation'
 import { requestApi, uploadCsv } from './api'
@@ -91,8 +93,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null)
   const [uploadStartedAt, setUploadStartedAt] = useState(0)
-  const [estimatedProcessingMs, setEstimatedProcessingMs] = useState<number | null>(null)
-  const lastAnalysis = useRef<{ bytes: number; ms: number } | null>(null)
+  const [estimatedProcessing, setEstimatedProcessing] = useState<DurationEstimate | null>(null)
+  const [analysisHistory, setAnalysisHistory] = useState(() => readAnalysisHistory(API_URL))
   const { loading: apiLoading, online: apiOnline } = useApiHealth(API_URL)
   const inputRef = useRef<HTMLInputElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
@@ -152,11 +154,12 @@ function App() {
     const startedAt = Date.now()
     setUploadStartedAt(startedAt)
     setUploadProgress({ stage: 'preparing', loaded: 0, total: 0, stageStartedAt: startedAt })
-    setEstimatedProcessingMs(lastAnalysis.current ? Math.max(1000, lastAnalysis.current.ms * file.size / lastAnalysis.current.bytes) : Math.max(2000, 10000 * file.size / (20 * 1024 * 1024)))
+    setEstimatedProcessing(null)
     setIsLoading(true); setError('')
     try {
       const csvText = await file.text(); validateApiCsv(csvText)
       const localRows = parseCsv(csvText).map((item, index) => normalizeInvoice(item, index))
+      setEstimatedProcessing(estimateAnalysis(localRows.length, analysisHistory))
       let analysisStartedAt = 0
       let analysisMs = 0
       const response = await uploadCsv(`${API_URL}/recebiveis/upload`, file, progress => {
@@ -169,7 +172,11 @@ function App() {
       if (!Array.isArray(apiRows)) throw new Error('A API retornou um resultado inválido. Tente enviar o arquivo novamente.')
       setSelectedFund(''); setCedenteFilter(''); setSacadoFilter('')
       setResults(apiRows.map((item) => { const local = localRows[item.linha - 2] ?? localRows.find((row) => row.id === item.id); return { ...(local ?? { fundo: 'Fundo não informado', fundoDocumento: '', id: item.id, sacado: 'Dados retornados pela API', cnpj: '', valor: 0, vencimento: '', tipo: '', situacao: '', cedente: '' }), linha: item.linha, aprovado: item.status === 'APROVADO', motivos: item.barrado_por ?? [], precificacao: item.precificacao } }))
-      if (analysisMs > 0 && file.size > 0) lastAnalysis.current = { bytes: file.size, ms: analysisMs }
+      if (analysisMs >= 20 && localRows.length > 0) {
+        const history = cleanHistory([...analysisHistory, { rows: localRows.length, ms: analysisMs, at: Date.now() }])
+        setAnalysisHistory(history)
+        saveAnalysisHistory(API_URL, history)
+      }
       setCurrentPage(1)
     } catch (requestError) { setError(requestError instanceof Error ? requestError.message : 'Não foi possível analisar o CSV na API.') } finally { setIsLoading(false); setUploadProgress(null); processingFile.current = false }
   }
@@ -242,7 +249,7 @@ function App() {
         <section className="workspace-grid"><div className="left-column">
           {results.length === 0 && !isLoading && <div className="upload-card" id="analise"><div className="section-heading"><div><span className="step">01</span><div><p className="eyebrow">COMECE POR AQUI</p><h2>Analise sua carteira de recebíveis</h2><p>Envie um arquivo para validar notas e consultar a precificação sugerida.</p></div></div><div className="upload-actions"><button type="button" className="validators-open" onClick={() => setValidatorsOpen(true)}>Configurar regras <span aria-hidden="true">↗</span></button></div></div><div className={`drop-zone ${isDragging ? 'dragging' : ''}`} onClick={event => { if (event.target !== inputRef.current) inputRef.current?.click() }} onDragOver={(event) => { event.preventDefault(); setIsDragging(true) }} onDragLeave={() => setIsDragging(false)} onDrop={onDrop}><input ref={inputRef} type="file" accept=".csv,.json" onChange={onInputChange} hidden /><div className="upload-icon">↑</div><h3>Arraste e solte seu arquivo aqui</h3><p>ou <button className="link-button" type="button" onClick={event => { event.stopPropagation(); inputRef.current?.click() }}>selecione no computador</button></p><small>CSV ou JSON · até 50 MiB</small></div>{error && <div className="error-message" role="alert">{error}</div>}<div className="upload-footnote" id="seguranca"><span className="shield-icon">✓</span><p><strong>Seus dados, sob controle.</strong><br />A análise segue os validadores configurados para sua operação.</p><button type="button" onClick={() => setValidatorsOpen(true)}>Revisar regras <span aria-hidden="true">→</span></button></div></div>}
           {!isLoading && results.length > 0 && <section id="dashboard-view" aria-label="Dashboard" hidden={activeView !== 'dashboard'}>{activeView === 'dashboard' && <Dashboard rows={results} selectedFund={selectedFund} onFundChange={setSelectedFund} activePanel={dashboardPanel} onPanelChange={setDashboardPanel} />}</section>}
-          {isLoading ? (uploadProgress ? <UploadLoading progress={uploadProgress} startedAt={uploadStartedAt} estimatedProcessingMs={estimatedProcessingMs} /> : <div className="loading-state" role="status"><span className="loading-spinner" /><strong>Salvando configuração...</strong></div>) : results.length > 0 && <section id="invoices-view" aria-label="Listagem de notas fiscais" hidden={activeView !== 'notas'}>{activeView === 'notas' && <div className="results-section"><div className={`results-controls${filtersOpen ? ' results-controls--filters-open' : ''}`}><div className="results-header"><div><h2>Notas processadas</h2><p className="invoice-table-hint">Abra uma nota para ver os detalhes.</p></div></div><button type="button" className={`results-filters-toggle${activeFilterCount ? ' has-active-filters' : ''}`} aria-label={activeFilterCount ? `Filtros: ${activeFilterCount} ${activeFilterCount === 1 ? 'ativo' : 'ativos'}` : 'Filtros'} aria-expanded={filtersOpen} aria-controls="invoices-filters" onClick={() => setFiltersOpen(open => !open)}>
+          {isLoading ? (uploadProgress ? <UploadLoading progress={uploadProgress} startedAt={uploadStartedAt} estimatedProcessing={estimatedProcessing} /> : <div className="loading-state" role="status"><span className="loading-spinner" /><strong>Salvando configuração...</strong></div>) : results.length > 0 && <section id="invoices-view" aria-label="Listagem de notas fiscais" hidden={activeView !== 'notas'}>{activeView === 'notas' && <div className="results-section"><div className={`results-controls${filtersOpen ? ' results-controls--filters-open' : ''}`}><div className="results-header"><div><h2>Notas processadas</h2><p className="invoice-table-hint">Abra uma nota para ver os detalhes.</p></div></div><button type="button" className={`results-filters-toggle${activeFilterCount ? ' has-active-filters' : ''}`} aria-label={activeFilterCount ? `Filtros: ${activeFilterCount} ${activeFilterCount === 1 ? 'ativo' : 'ativos'}` : 'Filtros'} aria-expanded={filtersOpen} aria-controls="invoices-filters" onClick={() => setFiltersOpen(open => !open)}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
             <span className="filters-toggle-label">Filtros</span> {activeFilterCount > 0 && <span className="active-filter-count" aria-hidden="true">{activeFilterCount}</span>}
             <svg className="filters-chevron" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>

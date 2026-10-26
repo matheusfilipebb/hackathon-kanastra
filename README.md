@@ -111,6 +111,7 @@ npm start --prefix back
 Conferir e compilar o frontend:
 
 ```bash
+npm test --prefix front # testes de métricas e estimativas com Node 24
 npm run lint --prefix front
 npm run build --prefix front
 ```
@@ -271,3 +272,5 @@ Documentação oficial: [configurar Cloudflare Tunnel](https://developers.cloudf
 ## Histórico de prompts
 
 Os pedidos usados durante o projeto estão reunidos em [HISTORICO_PROMPTS.md](HISTORICO_PROMPTS.md), incluindo público-alvo, identidade visual, backend, Docker e Cloudflare Tunnel.
+
+A estimativa de tempo e suas limitações estão descritas em [docs/estimativa-tempo.md](docs/estimativa-tempo.md).
