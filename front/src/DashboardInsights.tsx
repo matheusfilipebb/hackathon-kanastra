@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
+import { maturitySummary, todayInSaoPaulo, financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
 import type { DashboardRow } from './dashboardMetrics'
 
 export function InsightMetrics({ items }: { items: { label: string; value: string; detail?: string }[] }) {
@@ -17,5 +17,15 @@ export function FinancialPanel({ rows }: { rows: DashboardRow[] }) {
   return <InsightCard title="Impacto financeiro da análise" note={`Valores nominais do arquivo, sem desconto de antecipação.${summary.invalid ? ` ${number.format(summary.invalid)} notas com valor inválido foram excluídas dos totais em R$.` : ''}`}>
     <InsightMetrics items={[{ label: 'Valor analisado', value: money.format(summary.total / 100) }, { label: 'Aprovado', value: money.format(summary.approved / 100), detail: `${formatShare(summary.approved, summary.total)} do valor` }, { label: 'Não aprovado', value: money.format(summary.rejected / 100), detail: 'Valor fora da operação neste resultado' }]} />
     <ValueBars label="Distribuição do valor nominal por resultado" total={summary.total} items={[{ label: 'Aprovadas', value: summary.approved, detail: `${number.format(rows.filter(row => row.aprovado).length)} notas`, color: '#2daa82' }, { label: 'Não aprovadas', value: summary.rejected, detail: `${number.format(rows.filter(row => !row.aprovado).length)} notas`, color: '#c35a50' }]} />
+  </InsightCard>
+}
+
+export function MaturityPanel({ rows }: { rows: DashboardRow[] }) {
+  const reference = todayInSaoPaulo()
+  const buckets = maturitySummary(rows, reference)
+  const total = buckets.reduce((sum, bucket) => sum + bucket.value, 0)
+  return <InsightCard title="Agenda de vencimentos" note={`Referência: ${reference.split('-').reverse().join('/')} · horário de São Paulo. Inclui aprovadas e não aprovadas. Datas inválidas aparecem em uma faixa separada.`}>
+    <InsightMetrics items={[{ label: 'Valor vencido', value: money.format(buckets[0].value / 100), detail: `${number.format(buckets[0].count)} notas` }, { label: 'Vence em até 7 dias', value: money.format((buckets[1].value + buckets[2].value) / 100), detail: 'Inclui as notas que vencem hoje' }, { label: 'Sem data válida', value: number.format(buckets[7].count), detail: 'Notas para conferir no arquivo' }]} />
+    <ValueBars label="Valores por faixa de vencimento" total={total} items={buckets.map((bucket, index) => ({ ...bucket, detail: `${number.format(bucket.count)} notas`, color: index === 0 ? '#c35a50' : index < 3 ? '#b77b32' : '#2daa82' }))} />
   </InsightCard>
 }
