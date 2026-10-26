@@ -222,6 +222,18 @@ em filtro por fundo crie um modal para selecionar
 adicione o meu historico de prompt desse chat e atualiza documentaçao em especial dos prints e faça comit
 ```
 
+## 36
+
+```text
+melhure o ui/ux do modal de configuracao de regras de oprcao
+```
+
+## 37
+
+```text
+adicione na pagina principal o link para o repositorio do projeto no git equipe responsavel e os githubs de cada um,  atualzie listas do prompt e faça comit
+```
+
 ## Entregas relacionadas
 
 - [Documentação e capturas atuais](../interface.md).

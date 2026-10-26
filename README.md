@@ -10,11 +10,11 @@ Veja também a [apresentação dos resultados não aprovados](docs/resultados-na
 
 O [dashboard com sete painéis](docs/dashboard.md) reúne visão geral, comparativo por fundo, impacto financeiro, vencimentos, concentração, impacto dos motivos e simulação de antecipação. A navegação funciona por scroll, teclado, botões e gestos no celular.
 
-O [guia da interface atual](docs/interface.md) reúne os comportamentos, as capturas de desktop e celular e o procedimento para renovar os prints. O [histórico deste chat](docs/prompts/chat-interface.md) preserva os 35 pedidos e os anexos usados como referência.
+O [guia da interface atual](docs/interface.md) reúne os comportamentos, as capturas de desktop e celular e o procedimento para renovar os prints. O [histórico deste chat](docs/prompts/chat-interface.md) preserva os 37 pedidos e os anexos usados como referência.
 
 ## Telas
 
-Capturas atualizadas em 26/10/2026, com 120 notas e oito fundos sintéticos. As respostas são controladas para demonstrar a interface; não representam uma carteira real. O [catálogo dos 20 prints](docs/interface.md#catálogo-das-capturas-atuais) registra os demais estados e as dimensões.
+Capturas atualizadas em 26/10/2026, com 120 notas e oito fundos sintéticos. As respostas são controladas para demonstrar a interface; não representam uma carteira real. O [catálogo dos 26 prints](docs/interface.md#catálogo-das-capturas-atuais) registra os demais estados e as dimensões.
 
 ### Página inicial
 
@@ -33,6 +33,18 @@ Capturas atualizadas em 26/10/2026, com 120 notas e oito fundos sintéticos. As 
 ![Busca e seleção de fundo](docs/filtro-fundo-desktop.png)
 
 [Ver a interface no celular](docs/interface.md#navegação-e-memória) · [Ver os sete gráficos](docs/dashboard.md#capturas)
+
+## Equipe responsável
+
+A página inicial apresenta os integrantes e os links para seus perfis. O código está no [repositório do projeto](https://github.com/matheusfilipebb/hackathon-kanastra).
+
+| Integrante | GitHub |
+| --- | --- |
+| Samuel Victor Alventino Silva | [@samuel-0v](https://github.com/samuel-0v) |
+| Matheus Filipe | [@matheusfilipebb](https://github.com/matheusfilipebb) |
+| David de Oliveira | [@ogDavid-SI](https://github.com/ogDavid-SI) |
+
+Os perfis foram conferidos com os [contribuidores do repositório](https://api.github.com/repos/matheusfilipebb/hackathon-kanastra/contributors) e as páginas públicas do GitHub em 26/10/2026.
 
 ## Como rodar
 

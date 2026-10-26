@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { createServer } from 'node:http'
@@ -34,6 +34,8 @@ const csv = ['NOME_FUNDO;DOC_FUNDO;NOME_CEDENTE;DOC_CEDENTE;NOME_SACADO;DOC_SACA
 const apiRows = rows.map(row => ({ linha: row.index + 2, id: `NF-${String(row.index + 1).padStart(5, '0')}`, status: row.approved ? 'APROVADO' : 'BARRADO', barrado_por: row.approved ? [] : [reasons[Math.floor(row.index / 5) % reasons.length], reasons[(Math.floor(row.index / 5) + 2) % reasons.length]], precificacao: row.approved && row.index % 7 !== 0 ? { valor_nominal: row.value, valor_desconto: Math.round(row.value * .02 * 100) / 100, valor_liquido: Math.round((row.value - Math.round(row.value * .02 * 100) / 100) * 100) / 100, prazo_dias: 30 } : undefined }))
 let apiBase = ''
 await page.route('**/recebiveis/upload', route => { apiBase = route.request().url().replace(/\/recebiveis\/upload$/, ''); return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(apiRows) }) })
+const rulesConfiguration = JSON.parse(await readFile(new URL('../../back/data/validadores_antecipe.json', import.meta.url), 'utf8'))
+await page.route('**/validadores', route => route.request().method() === 'GET' ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rulesConfiguration) }) : route.abort('blockedbyclient'))
 await mkdir(docs, { recursive: true })
 async function capture(file, description) {
   await page.evaluate(() => document.fonts.ready)
@@ -52,8 +54,28 @@ try {
   await page.goto(baseUrl)
   await page.locator('.landing-intro').waitFor()
   await capture('pagina-inicial.png', 'Abertura da aplicação; capa estática por movimento reduzido')
+  await page.locator('#equipe').scrollIntoViewIfNeeded()
+  await capture('equipe-desktop.png', 'Equipe responsável e links verificados do GitHub no desktop')
+  await mobile();await page.locator('#equipe').scrollIntoViewIfNeeded()
+  await capture('equipe-mobile.png', 'Equipe e repositório na página inicial do celular')
+  await desktop()
   await page.locator('#analise').scrollIntoViewIfNeeded()
   await capture('topbar-rolagem.png', 'Cabeçalho da página inicial após rolagem e área de upload')
+  await page.getByRole('button', { name: 'Configurar regras', exact: true }).click()
+  const rulesDialog = page.getByRole('dialog', { name: 'Regras da operação' })
+  await rulesDialog.locator('.operation-fields').waitFor()
+  await capture('regras-operacao-desktop.png', 'Modal de regras: elegibilidade agrupada por assunto')
+  await rulesDialog.getByRole('switch', { name: 'Ativar Valor mínimo da nota', exact: true }).locator('xpath=ancestor::article').getByRole('button', { name: /Ajustar/ }).click()
+  await rulesDialog.getByRole('spinbutton', { name: 'Valor mínimo (R$)', exact: true }).scrollIntoViewIfNeeded()
+  await capture('regras-parametros-desktop.png', 'Ajuste de parâmetros de uma regra, com ações fixas')
+  await rulesDialog.getByRole('tab', { name: /Precificação/ }).click()
+  await capture('regras-precificacao-desktop.png', 'Precificação com exemplo ilustrativo, sem salvar alterações')
+  await mobile()
+  await rulesDialog.getByRole('tab', { name: /Elegibilidade/ }).click()
+  await rulesDialog.locator('.operation-body').evaluate(el => { el.scrollTop = 0 })
+  await capture('regras-operacao-mobile.png', 'Modal de regras no celular, com abas e ações visíveis')
+  await page.keyboard.press('Escape')
+  await desktop()
   await mobile();await page.evaluate(() => scrollTo(0, 0))
   await capture('pagina-inicial-mobile.png', 'Página inicial no celular')
   await desktop()

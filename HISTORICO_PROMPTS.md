@@ -537,4 +537,4 @@ Sessão do workspace `c:\Users\mathe\Downloads\hackathon`.
 
 ## REA, Notas e Dashboard — este chat
 
-Os 35 pedidos deste chat, em ordem e com a redação original, estão em [docs/prompts/chat-interface.md](docs/prompts/chat-interface.md). O registro inclui os seis anexos de referência, as alterações da página inicial, das Notas e dos sete painéis do dashboard, estimativa de tempo, modal de fundos e o pedido de atualização desta documentação. As capturas atuais da aplicação estão no [guia da interface](docs/interface.md).
+Os 37 pedidos deste chat, em ordem e com a redação original, estão em [docs/prompts/chat-interface.md](docs/prompts/chat-interface.md). O registro inclui os seis anexos de referência, as alterações da página inicial, das Notas e dos sete painéis do dashboard, estimativa de tempo, modal de fundos e o pedido de atualização desta documentação. As capturas atuais da aplicação estão no [guia da interface](docs/interface.md).

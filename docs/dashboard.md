@@ -34,7 +34,7 @@ No celular, a navegação entre **Notas**, **Dashboard** e **Nova análise** fic
 
 ## Capturas
 
-Renovadas em 26/10/2026 com 120 notas sintéticas, oito fundos, 96 aprovadas e 24 não aprovadas. As respostas são controladas no navegador e não representam resultados reais de validação. O [guia da interface](interface.md) explica a geração e identifica os 20 prints; o [manifesto](capturas-interface.json) registra data e dimensões.
+Renovadas em 26/10/2026 com 120 notas sintéticas, oito fundos, 96 aprovadas e 24 não aprovadas. As respostas são controladas no navegador e não representam resultados reais de validação. O [guia da interface](interface.md) explica a geração e identifica os 26 prints; o [manifesto](capturas-interface.json) registra data e dimensões.
 
 ### 1. Visão geral
 

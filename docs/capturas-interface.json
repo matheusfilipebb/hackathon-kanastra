@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-26T05:00:18.446Z",
+  "capturedAt": "2026-10-26T05:22:11.301Z",
   "baseUrl": "http://127.0.0.1:5175",
   "source": "Dados sintéticos e resposta controlada no navegador; não são resultados de uma carteira real nem validação de regras do backend",
   "referenceDate": "2026-10-26",
@@ -16,10 +16,46 @@
       "height": 900
     },
     {
+      "file": "equipe-desktop.png",
+      "description": "Equipe responsável e links verificados do GitHub no desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "equipe-mobile.png",
+      "description": "Equipe e repositório na página inicial do celular",
+      "width": 390,
+      "height": 844
+    },
+    {
       "file": "topbar-rolagem.png",
       "description": "Cabeçalho da página inicial após rolagem e área de upload",
       "width": 1440,
       "height": 900
+    },
+    {
+      "file": "regras-operacao-desktop.png",
+      "description": "Modal de regras: elegibilidade agrupada por assunto",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "regras-parametros-desktop.png",
+      "description": "Ajuste de parâmetros de uma regra, com ações fixas",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "regras-precificacao-desktop.png",
+      "description": "Precificação com exemplo ilustrativo, sem salvar alterações",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "regras-operacao-mobile.png",
+      "description": "Modal de regras no celular, com abas e ações visíveis",
+      "width": 390,
+      "height": 844
     },
     {
       "file": "pagina-inicial-mobile.png",

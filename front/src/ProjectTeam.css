@@ -1,0 +1,20 @@
+.project-team { max-width: 1220px; margin: 0 auto; padding: 36px 28px 60px; scroll-margin-top: 110px; }
+.project-team-heading { display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-bottom: 26px; }
+.project-team-heading .eyebrow { margin-bottom: 10px; color: #14735a; font: 600 10px/1.5 'Inter', sans-serif; letter-spacing: .12em; }
+.project-team h2 { margin: 0; color: #193c32; font: 300 clamp(20px, 2.2vw, 28px)/1.5 'Unbounded', sans-serif; letter-spacing: -.8px; }
+.project-team-heading p:last-child { margin: 12px 0 0; max-width: 510px; color: #668077; font-size: 13px; line-height: 1.7; }
+.project-repository { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 10px; min-height: 44px; padding: 12px 18px; border: 1px solid #193c3233; border-radius: 999px; background: #fffdf980; color: #193c32; text-decoration: none; font-size: 12px; font-weight: 600; }
+.project-repository:hover { border-color: #14735a; background: #eaf0e4; }
+.project-team-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.project-team-grid li { min-width: 0; }
+.project-team-grid a { display: flex; align-items: center; gap: 14px; height: 100%; min-height: 100px; padding: 20px 18px; border: 1px solid #193c3218; border-radius: 14px; background: #fffcf5b3; color: #193c32; text-decoration: none; box-shadow: 0 5px 20px #193c3205; transition: border-color .18s ease, background .18s ease; }
+.project-team-grid a:hover { border-color: #14735a66; background: #fffdf9; }
+.project-team-avatar { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: #e6eee1; color: #14735a; font-size: 12px; font-weight: 600; }
+.project-team-person { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
+.project-team-person strong { font-size: 13px; line-height: 1.6; font-weight: 600; }
+.project-team-person > span { color: #668077; font-size: 12px; overflow-wrap: anywhere; }
+.project-team-arrow { align-self: flex-start; color: #14735a; font-size: 17px; }
+.project-team a:focus-visible { outline: 2px solid #14735a; outline-offset: 4px; }
+@media (max-width: 900px) { .project-team-grid { grid-template-columns: 1fr; }.project-team-grid a { min-height: 86px; }.project-team-heading { align-items: flex-start; flex-direction: column; gap: 18px; } }
+@media (max-width: 480px) { .project-team { padding: 28px 16px 36px; }.project-team-grid a { padding: 16px; }.project-team-heading p:last-child { font-size: 12px; }.project-repository { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .project-team-grid a { transition: none; } }

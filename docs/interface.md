@@ -4,9 +4,9 @@ O fluxo começa no envio de um CSV, passa pela validação e permite alternar en
 
 ## Sobre os prints
 
-Os prints usam **120 notas sintéticas de oito fundos**, com 96 aprovadas e 24 não aprovadas. Nomes e documentos são demonstrativos. As respostas de análise são controladas no navegador; os prints não comprovam a execução das regras do backend nem representam uma carteira real. A agenda de vencimentos usa a data de referência registrada no manifesto, no fuso de São Paulo.
+Os prints usam **120 notas sintéticas de oito fundos**, com 96 aprovadas e 24 não aprovadas. Nomes e documentos são demonstrativos. As respostas de análise e de consulta das regras são controladas no navegador; os prints não comprovam a execução das regras do backend nem representam uma carteira real. A agenda de vencimentos usa a data de referência registrada no manifesto, no fuso de São Paulo.
 
-A preferência por movimento reduzido foi ativada para capturar estados estáveis. A abertura mostra a capa do vídeo; no uso normal, o vídeo reproduz sem som, em loop, e desaparece durante a rolagem. Na captura de processamento, o histórico de tempo e o atraso HTTP também são controlados para demonstrar a faixa prevista.
+A preferência por movimento reduzido foi ativada para capturar estados estáveis. A abertura mostra a capa do vídeo; no uso normal, o vídeo reproduz sem som, em loop, e desaparece durante a rolagem. O modal de regras usa uma cópia da configuração local e não salva alterações na API. Na captura de processamento, o histórico de tempo e o atraso HTTP também são controlados para demonstrar a faixa prevista.
 
 ## Página inicial e upload
 
@@ -15,6 +15,24 @@ O cabeçalho é fixo na página inicial e muda do fundo transparente para creme 
 ![Página inicial no desktop](pagina-inicial.png)
 
 [Upload e cabeçalho após rolagem](topbar-rolagem.png) · [Página inicial no celular](pagina-inicial-mobile.png)
+
+## Equipe e código do projeto
+
+No fim da página inicial, a seção **Quem constrói o Antecipe** mostra Samuel Victor Alventino Silva, Matheus Filipe e David de Oliveira. Cada cartão leva ao perfil do integrante no GitHub, e o botão **Ver projeto no GitHub** abre o repositório. Os links abrem em uma nova aba, têm identificação por teclado e leitor de tela e não aparecem nas telas de análise.
+
+[Equipe no desktop](equipe-desktop.png) · [Equipe no celular](equipe-mobile.png) · [Integrantes e perfis verificados](../README.md#equipe-responsável)
+
+## Configuração das regras da operação
+
+O modal tem três abas: **Fundo**, **Elegibilidade** e **Precificação**. Cabeçalho, abas e ações permanecem visíveis; apenas o corpo rola. As regras são agrupadas em cadastro do pagador, critérios da nota e concentração da carteira, com descrição simples, controle de ativação e resumo dos parâmetros.
+
+O botão Ajustar abre os parâmetros de uma regra. Tipos de recebível e situações cadastrais são escolhidos por opções, sem digitar listas separadas por vírgula. Parâmetros de regras inativas podem ser preparados antes de ativá-las. A aba Precificação mostra um exemplo ilustrativo para uma nota de R$ 1.000,00 com prazo de 30 dias.
+
+Salvar fica disponível quando há alterações. A validação abre a aba e o parâmetro com problema, inclusive se estiver recolhido. Durante o salvamento, edição e fechamento ficam bloqueados para evitar envios simultâneos. Erros preservam as alterações para uma nova tentativa, e o sucesso informa que apenas as próximas análises usarão as regras salvas.
+
+![Regras agrupadas no desktop](regras-operacao-desktop.png)
+
+[Parâmetros de uma regra](regras-parametros-desktop.png) · [Precificação e exemplo](regras-precificacao-desktop.png) · [Modal no celular](regras-operacao-mobile.png)
 
 ## Notas
 
@@ -65,8 +83,14 @@ Veja [como a estimativa é calculada e seus limites](estimativa-tempo.md).
 | Arquivo | Estado | Dimensões |
 | --- | --- | --- |
 | [pagina-inicial.png](pagina-inicial.png) | Abertura | 1440 × 900 |
+| [equipe-desktop.png](equipe-desktop.png) | Equipe e repositório | 1440 × 900 |
+| [equipe-mobile.png](equipe-mobile.png) | Equipe no celular | 390 × 844 |
 | [topbar-rolagem.png](topbar-rolagem.png) | Cabeçalho após rolagem e upload | 1440 × 900 |
 | [pagina-inicial-mobile.png](pagina-inicial-mobile.png) | Abertura no celular | 390 × 844 |
+| [regras-operacao-desktop.png](regras-operacao-desktop.png) | Elegibilidade no modal de regras | 1440 × 900 |
+| [regras-parametros-desktop.png](regras-parametros-desktop.png) | Parâmetros de uma regra | 1440 × 900 |
+| [regras-precificacao-desktop.png](regras-precificacao-desktop.png) | Precificação e exemplo | 1440 × 900 |
+| [regras-operacao-mobile.png](regras-operacao-mobile.png) | Regras no celular | 390 × 844 |
 | [pagina-notas.png](pagina-notas.png) | Notas, filtros recolhidos | 1440 × 900 |
 | [notas-filtros-desktop.png](notas-filtros-desktop.png) | Filtros expandidos | 1440 × 900 |
 | [notas-mobile.png](notas-mobile.png) | Notas no celular | 390 × 844 |
@@ -95,4 +119,4 @@ Com o frontend iniciado, Node 24, Playwright e um Chromium disponíveis, execute
 BASE_URL=http://127.0.0.1:5173 node front/scripts/capture-docs.mjs
 ```
 
-O script usa o pacote `playwright` instalado. Para reaproveitar uma instalação existente de `playwright-core` e um Chrome local, informe `PLAYWRIGHT_MODULE_PATH` (caminho do módulo) e `CHROME_PATH` (caminho do executável). Ele gera os 20 prints e o manifesto em `docs/`, injeta somente respostas demonstrativas no navegador e não modifica as regras nem os dados do backend.
+O script usa o pacote `playwright` instalado. Para reaproveitar uma instalação existente de `playwright-core` e um Chrome local, informe `PLAYWRIGHT_MODULE_PATH` (caminho do módulo) e `CHROME_PATH` (caminho do executável). Ele gera os 26 prints e o manifesto em `docs/`, injeta somente respostas demonstrativas no navegador e não modifica as regras nem os dados do backend.
