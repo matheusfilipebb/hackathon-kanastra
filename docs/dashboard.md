@@ -1,21 +1,26 @@
 # Dashboard com troca de painéis
 
-O dashboard ocupa a janela e tem dois painéis:
+O dashboard ocupa a janela e tem sete painéis:
 
 1. **Visão geral:** gráficos de pizza com o resultado das notas e os motivos de não aprovação.
 2. **Por fundo:** gráfico de colunas comparando aprovadas e não aprovadas em todos os fundos do arquivo.
+3. **Financeiro:** valores nominais aprovados e não aprovados, com participação em reais.
+4. **Vencimentos:** faixas de vencimento relativas ao dia atual em São Paulo, incluindo vencidas, hoje e datas inválidas.
+5. **Concentração:** ranking de sacados ou cedentes, dez maiores e demais participantes, com identificação por documento quando disponível.
+6. **Impacto dos motivos:** recusas ordenadas pelo valor nominal afetado. Uma nota pode aparecer em mais de um motivo; as barras não são somáveis.
+7. **Antecipação:** nominal, desconto e líquido somente das aprovadas com precificação válida da API, prazo médio ponderado e comparativo por fundo. A cobertura da simulação e os dados ausentes ficam explícitos.
 
-Rolar para baixo avança para as colunas; rolar para cima volta às pizzas. A transição combina opacidade e deslocamento, com bloqueio temporário para evitar trocas causadas pela inércia do scroll. A preferência por movimento reduzido remove a animação.
+Rolar para baixo avança um painel; rolar para cima volta ao anterior. A navegação para nos limites do primeiro e último painéis. A transição combina opacidade e deslocamento, com bloqueio temporário para evitar trocas causadas pela inércia do scroll. A preferência por movimento reduzido remove a animação.
 
-Os botões **Visão geral** e **Por fundo** permitem selecionar diretamente o painel. Com a área dos gráficos em foco, use as setas, Page Up, Page Down, Home, End ou espaço; Shift + espaço volta à visão geral. No celular, deslizar para cima ou para baixo também troca os painéis.
+Os botões **Visão geral** e **Por fundo** permitem selecionar diretamente o painel. Com a área dos gráficos em foco, use as setas, Page Up, Page Down, Home, End ou espaço; Home vai ao primeiro painel, End ao último e Shift + espaço volta um painel. No celular, deslizar para cima ou para baixo também troca os painéis.
 
 Legendas extensas e comparativos com muitos fundos têm rolagem interna. A rolagem da legenda é preservada enquanto há conteúdo naquela direção. Movimentos horizontais e Shift + scroll ficam disponíveis para percorrer as colunas.
 
-O filtro por fundo é aplicado à visão geral. No comparativo, o seletor indica todos os fundos e fica desabilitado; ao voltar, a seleção anterior é mantida. Os eixos de quantidade usam valores inteiros.
+O filtro por fundo é aplicado à visão geral e aos cinco novos painéis. No comparativo, o seletor indica todos os fundos e fica desabilitado; ao voltar, a seleção anterior é mantida. Os eixos de quantidade usam valores inteiros.
 
 Ao alternar entre Notas e Dashboard, o último painel de gráficos, a página da tabela e sua posição de rolagem são mantidos durante a análise atual. Alterar filtros reinicia a paginação das notas; uma nova análise reinicia a navegação. O cabeçalho do dashboard acompanha as dimensões do topo compacto de Notas no desktop, e os seletores de gráficos ficam centralizados também em telas grandes.
 
-No celular, a navegação entre **Notas**, **Dashboard** e **Nova análise** fica em uma barra flutuante centralizada no rodapé, com ícones e nomes sempre visíveis. O dashboard reserva espaço abaixo dos controles para essa barra e para a área segura do dispositivo.
+No celular, a navegação entre **Notas**, **Dashboard** e **Nova análise** fica em uma barra flutuante centralizada no rodapé, com ícones e nomes sempre visíveis. O seletor dos sete painéis permite rolagem horizontal e mantém a opção ativa à vista. O dashboard reserva espaço abaixo dos controles para essa barra e para a área segura do dispositivo.
 
 ## Verificação
 
@@ -36,3 +41,9 @@ As capturas usam dados de exemplo e respostas controladas.
 ![Comparativo por fundo](dashboard-paineis-colunas.png)
 
 ![Dashboard e navegação no celular](dashboard-paineis-mobile.png)
+
+## Cálculos e validação dos novos painéis
+
+Valores monetários são acumulados em centavos. Valores nominais negativos ou não finitos são excluídos dos totais financeiros, com aviso no painel Financeiro. Datas impossíveis não são convertidas para outro dia. Motivos repetidos na mesma nota contam uma vez por categoria. A simulação rejeita preços ausentes ou inconsistentes, sem inventar precificação para as notas.
+
+Testes: `node --test front/tests/*.test.mjs` com Node 24. Os testes cobrem totais, faixas e fuso de datas, concentração, motivos sobrepostos e simulação parcial. A conferência no navegador percorreu os sete painéis em quatro tamanhos (de 320 × 568 a 1440 × 900), filtro financeiro, precificação parcial, teclado, memória e ausência de scroll externo.

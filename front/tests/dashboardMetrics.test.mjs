@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { financialSummary, reasonImpactSummary, concentrationSummary, maturitySummary, dateDay, todayInSaoPaulo } from '../src/dashboardMetrics.ts'
+import { financialSummary, pricingSummary, reasonImpactSummary, concentrationSummary, maturitySummary, dateDay, todayInSaoPaulo } from '../src/dashboardMetrics.ts'
 
 test('totais financeiros em centavos, incluindo zeros e ignorando valores inválidos', () => {
   assert.deepEqual(financialSummary([{valor:.1, aprovado:true},{valor:.2, aprovado:true},{valor:9.99, aprovado:false},{valor:NaN, aprovado:false},{valor:-10, aprovado:false}]), {approved:30,rejected:999,total:1029,invalid:2})
@@ -31,4 +31,13 @@ test('impacto por motivo elimina duplicatas por nota e explicita motivos sobrepo
   assert.deepEqual(result.map(x=>[x.value,x.count]),[[15000,2],[10000,1],[1000,1]])
   assert.equal(financialSummary(rows).rejected,16000)
   assert.equal(result.reduce((sum,x)=>sum+x.value,0),26000)
+})
+
+test('simulação usa apenas preços válidos de aprovadas, conserva totais e pondera o prazo', () => {
+  const price=(nominal,desconto,liquido,dias)=>({valor_nominal:nominal,valor_desconto:desconto,valor_liquido:liquido,prazo_dias:dias})
+  const rows=[{aprovado:true,fundo:'A',precificacao:price(100,10,90,10)},{aprovado:true,fundo:'B',precificacao:price(300,30,270,30)},{aprovado:true},{aprovado:true,precificacao:price(100,200,90,10)},{aprovado:false,precificacao:price(1000,0,1000,30)}]
+  const result=pricingSummary(rows)
+  assert.deepEqual([result.approved,result.count,result.missing,result.nominal,result.discount,result.liquid,result.averageDays],[4,2,2,40000,4000,36000,25])
+  assert.equal(result.funds[0].name,'B')
+  assert.equal(pricingSummary([]).count,0)
 })

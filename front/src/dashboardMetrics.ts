@@ -76,3 +76,22 @@ export function reasonImpactSummary(rows: DashboardRow[]) {
   }
   return [...grouped.values()].sort((a, b) => b.value - a.value || b.count - a.count || a.label.localeCompare(b.label))
 }
+
+export function pricingSummary(rows: DashboardRow[]) {
+  let approved = 0, count = 0, nominal = 0, discount = 0, liquid = 0, weightedDays = 0
+  const funds = new Map<string, { key: string; name: string; document: string; nominal: number; discount: number; liquid: number; count: number }>()
+  for (const row of rows) {
+    if (!row.aprovado) continue
+    approved++
+    const price = row.precificacao
+    if (!price || ![price.valor_nominal, price.valor_desconto, price.valor_liquido, price.prazo_dias].every(value => Number.isFinite(value) && value >= 0) || price.valor_nominal <= 0) continue
+    const face = cents(price.valor_nominal), fee = cents(price.valor_desconto), net = cents(price.valor_liquido)
+    if (fee > face || net > face || Math.abs(face - fee - net) > 1) continue
+    count++; nominal += face; discount += fee; liquid += net; weightedDays += face * price.prazo_dias
+    const key = row.fundoDocumento || row.fundo
+    const fund = funds.get(key) ?? { key, name: row.fundo, document: row.fundoDocumento, nominal: 0, discount: 0, liquid: 0, count: 0 }
+    fund.nominal += face; fund.discount += fee; fund.liquid += net; fund.count++
+    funds.set(key, fund)
+  }
+  return { approved, count, missing: approved - count, nominal, discount, liquid, averageDays: nominal ? weightedDays / nominal : 0, funds: [...funds.values()].sort((a, b) => b.liquid - a.liquid || a.key.localeCompare(b.key)) }
+}
