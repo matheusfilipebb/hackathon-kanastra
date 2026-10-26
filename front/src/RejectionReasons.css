@@ -1,0 +1,31 @@
+.status.rejected { background: #f8ead5; color: #81511e; white-space: nowrap; }
+.status.rejected > span { background: #b7813e; }
+.results-guidance { display: flex; align-items: flex-start; gap: 14px; margin: 20px 0; padding: 16px 18px; background: #f8f3e6; border: 1px solid #e6dcc7; border-radius: 12px; color: #594b35; }
+.results-guidance > span { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; border: 1px solid #bd9e67; border-radius: 50%; font-size: 14px; }
+.results-guidance strong { display: block; font-size: 14px; font-weight: 600; line-height: 1.6; }
+.results-guidance p { margin: 5px 0 0; font-size: 13px; line-height: 1.7; }
+.reason-cell { min-width: 240px; max-width: 320px; }
+.rejection-preview { display: grid; gap: 5px; width: 100%; padding: 6px 0; border: 0; background: transparent; color: #594b35; text-align: left; font-size: 13px; line-height: 1.6; }
+.rejection-preview strong { font-weight: 500; }
+.rejection-more { color: #7b6a4f; font-size: 12px; }
+.rejection-open { color: #14735a; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.rejection-preview:hover .rejection-open { color: #193c32; }
+.reason-passed { color: #597360; font-size: 13px; }
+.invoice-modal .rejection-summary { margin-top: 20px; padding: 20px; border: 1px solid #e6dcc7; border-radius: 14px; background: #fffcf5; }
+.rejection-summary > .eyebrow { margin: 0 0 8px; color: #81511e; font-size: 11px; }
+.rejection-summary > h3 { margin-bottom: 10px; font-size: 20px; line-height: 1.5; }
+.rejection-summary > p { color: #596e60; }
+.rejection-reasons { display: grid; gap: 18px; margin: 20px 0; padding: 0; list-style: none; }
+.rejection-reasons > li { display: flex; align-items: flex-start; gap: 12px; padding: 16px 0; border-top: 1px solid #e6dcc7; }
+.rejection-number { display: grid; place-items: center; flex: 0 0 26px; width: 26px; height: 26px; background: #f2e4ce; border-radius: 50%; color: #81511e; font-size: 12px; }
+.rejection-reasons li > div { min-width: 0; }
+.rejection-reasons h4 { margin: 0; color: #193c32; font-size: 15px; font-weight: 600; line-height: 1.6; }
+.rejection-reasons p { margin: 6px 0 0; color: #596e60; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.rejection-guidance { margin-top: 12px; padding-left: 12px; border-left: 2px solid #b8c9a9; }
+.rejection-guidance strong { font-size: 12px; font-weight: 600; color: #193c32; }
+.rejection-guidance p { margin-top: 4px; font-size: 13px; }
+.rejection-summary .rejection-followup { margin: 10px 0 0; padding-top: 16px; border-top: 1px solid #e6dcc7; font-size: 13px; line-height: 1.7; }
+.rejection-empty { margin-top: 18px; padding: 16px; border: 1px solid #e6dcc7; border-radius: 10px; }
+.rejection-empty strong { color: #594b35; font-size: 14px; }
+.rejection-empty p { font-size: 14px; line-height: 1.7; color: #596e60; }
+@media (max-width: 600px) { .invoice-modal .rejection-summary { padding: 16px 12px; }.rejection-summary > h3 { font-size: 18px; }.rejection-reasons > li { gap: 9px; }.rejection-reasons p { font-size: 13px; }.results-guidance { padding: 14px 12px; gap: 10px; } }

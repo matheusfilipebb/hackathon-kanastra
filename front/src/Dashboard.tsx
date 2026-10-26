@@ -1,16 +1,11 @@
 import { memo, useMemo } from 'react'
+import { getReasonTitle, uniqueReasons } from './reasons'
 
 type Row = { fundo: string; fundoDocumento: string; aprovado: boolean; motivos: string[] }
 type Slice = { label: string; value: number; color: string }
 const colors = ['#193C32', '#2DAA82', '#14735A', '#1E5546', '#638B80', '#C35A50', '#2DAA82', '#A7473F', '#527CA3']
 const number = new Intl.NumberFormat('pt-BR')
 const percent = (value: number, total: number) => `${(total ? value / total * 100 : 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
-const reasonLabels: Record<string, string> = {
-  CNPJ_SACADO_VALIDO: 'CNPJ do sacado inválido', SITUACAO_CADASTRAL_SACADO: 'Situação cadastral do sacado',
-  TIPO_RECEBIVEL: 'Tipo de recebível não aceito', VALOR_MINIMO: 'Valor abaixo do mínimo',
-  NAO_VENCIDA: 'Nota vencida', PRAZO_MAXIMO: 'Prazo acima do máximo', PRAZO_MINIMO: 'Prazo abaixo do mínimo',
-  CONCENTRACAO_MAXIMA_SACADO: 'Concentração máxima do sacado', CONCENTRACAO_MAXIMA_CEDENTE: 'Concentração máxima do cedente',
-}
 
 function Pie({ slices, title, empty }: { slices: Slice[]; title: string; empty: string }) {
   const total = slices.reduce((sum, slice) => sum + slice.value, 0)
@@ -39,11 +34,11 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
   const groupWidth = 130
   const width = Math.max(650, chartLeft + funds.length * groupWidth + 20)
   const plotWidth = width - chartLeft - 20
-  return <article className="dashboard-chart fund-columns"><h3>Notas aceitas e barradas por fundo</h3>
-    <div className="fund-bars-legend"><span><i style={{ background: '#2DAA82' }} />Aceitas</span><span><i style={{ background: '#C35A50' }} />Barradas</span></div>
+  return <article className="dashboard-chart fund-columns"><h3>Notas aprovadas e não aprovadas por fundo</h3>
+    <div className="fund-bars-legend"><span><i style={{ background: '#2DAA82' }} />Aprovadas</span><span><i style={{ background: '#C35A50' }} />Não aprovadas</span></div>
     <p className="dashboard-note">Quantidade de notas · passe o mouse sobre as colunas para ver os percentuais.</p>
     {funds.length ? <div className="fund-columns-scroll" tabIndex={0} role="region" aria-label="Comparativo entre fundos, com rolagem horizontal">
-      <svg width={width} height="380" viewBox={`0 0 ${width} 380`} role="img" aria-label={`Comparativo entre fundos. ${funds.map(fund => `${fund.name} ${fund.document}: ${number.format(fund.approved)} aceitas e ${number.format(fund.rejected)} barradas`).join('; ')}`}>
+      <svg width={width} height="380" viewBox={`0 0 ${width} 380`} role="img" aria-label={`Comparativo entre fundos. ${funds.map(fund => `${fund.name} ${fund.document}: ${number.format(fund.approved)} aprovadas e ${number.format(fund.rejected)} não aprovadas`).join('; ')}`}>
         {[0, 1, 2, 3, 4].map(tick => {
           const value = maximum * tick / 4
           const y = baseline - chartHeight * tick / 4
@@ -53,7 +48,7 @@ function FundColumns({ funds }: { funds: FundSummary[] }) {
           const center = chartLeft + (index + .5) * plotWidth / funds.length
           const total = fund.approved + fund.rejected
           return <g key={fund.key}>
-            {[{ label: 'Aceitas', value: fund.approved, color: '#2DAA82', x: center - 33 }, { label: 'Barradas', value: fund.rejected, color: '#C35A50', x: center + 3 }].map(status => {
+            {[{ label: 'Aprovadas', value: fund.approved, color: '#2DAA82', x: center - 33 }, { label: 'Não aprovadas', value: fund.rejected, color: '#C35A50', x: center + 3 }].map(status => {
               const height = status.value / maximum * chartHeight
               return <g key={status.label}><rect x={status.x} y={baseline - height} width="30" height={height} rx="8" fill={status.color}><title>{`${fund.name} · ${fund.document} — ${status.label}: ${number.format(status.value)} (${percent(status.value, total)})`}</title></rect><text x={status.x + 15} y={baseline - height - 8} textAnchor="middle" className="fund-column-value">{number.format(status.value)}</text></g>
             })}
@@ -93,18 +88,22 @@ function Dashboard({ rows, selectedFund, onFundChange }: { rows: Row[]; selected
       if (row.aprovado) approved++
       else {
         rejected++
-        for (const reason of new Set(row.motivos.length ? row.motivos : ['Motivo não informado'])) reasons.set(reason, (reasons.get(reason) ?? 0) + 1)
+        const rowReasons = uniqueReasons(row.motivos)
+        for (const reason of rowReasons.length ? rowReasons : ['Motivo não informado']) {
+          const label = getReasonTitle(reason)
+          reasons.set(label, (reasons.get(label) ?? 0) + 1)
+        }
       }
     }
-    return { approved, rejected, reasons: [...reasons].sort((a, b) => b[1] - a[1]).map(([label, value], index) => ({ label: reasonLabels[label] ?? label, value, color: colors[index % colors.length] })) }
+    return { approved, rejected, reasons: [...reasons].sort((a, b) => b[1] - a[1]).map(([label, value], index) => ({ label, value, color: colors[index % colors.length] })) }
   }, [rows, selectedFund])
 
   return <section className="dashboard" aria-labelledby="dashboard-title">
     <div className="dashboard-header"><div><p className="eyebrow"></p><h2 id="dashboard-title">Dashboard da análise</h2><p>Percentuais calculados pela quantidade de notas.</p></div><label>Filtrar por fundo<select value={selectedFund} onChange={event => onFundChange(event.target.value)}><option value="">Todos os fundos</option>{funds.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label></div>
-    <div className="dashboard-charts"><Pie title="Resultado da análise" empty="Nenhuma nota para este fundo." slices={[{ label: 'Aceitas', value: summary.approved, color: '#2DAA82' }, { label: 'Barradas', value: summary.rejected, color: '#C35A50' }]} /><Pie title="Motivos de bloqueio" empty="Nenhuma nota barrada neste fundo." slices={summary.reasons} /></div>
+    <div className="dashboard-charts"><Pie title="Resultado da análise" empty="Nenhuma nota para este fundo." slices={[{ label: 'Aprovadas', value: summary.approved, color: '#2DAA82' }, { label: 'Não aprovadas', value: summary.rejected, color: '#C35A50' }]} /><Pie title="Por que as notas não foram aprovadas?" empty="Todas as notas deste fundo foram aprovadas." slices={summary.reasons} /></div>
     <div className="fund-comparison-heading"><h3>Comparativo entre fundos</h3><p>Exibe todos os fundos do arquivo, independentemente do filtro selecionado.</p></div>
     <FundColumns funds={fundComparison} />
-    <p className="dashboard-note">Uma nota pode ter mais de um motivo de bloqueio. A pizza de motivos mostra a participação de cada motivo no total de ocorrências.</p>
+    <p className="dashboard-note">Uma nota pode ter mais de um motivo de não aprovação. A pizza de motivos mostra a participação de cada motivo no total de ocorrências.</p>
   </section>
 }
 

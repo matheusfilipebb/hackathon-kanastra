@@ -6,6 +6,8 @@ Aplicação para analisar recebíveis e calcular a precificação sugerida para 
 
 A atualização visual baseada na análise da Kanastra pelo REA está documentada em [docs/rea](docs/rea/README.md), com evidências, capturas de tela e resultados da verificação do frontend.
 
+Veja também a [apresentação dos resultados não aprovados](docs/resultados-nao-aprovados.md), com explicações dos critérios e orientações para conferir os dados.
+
 ## Telas
 
 ### Página inicial

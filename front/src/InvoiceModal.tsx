@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { formatReason } from './reasons'
+import { uniqueReasons } from './reasons'
+import RejectionReasons from './RejectionReasons'
 import { useModalBackdrop } from './useModalBackdrop'
 
 export type InvoiceDetails = {
@@ -16,6 +17,7 @@ function date(value?: string) {
 }
 
 export default function InvoiceModal({ invoice, onClose }: { invoice: InvoiceDetails; onClose: () => void }) {
+  const reasons = uniqueReasons(invoice.motivos)
   const dialog = useRef<HTMLDialogElement>(null)
   const backdropHandlers = useModalBackdrop(onClose)
   useEffect(() => {
@@ -33,7 +35,8 @@ export default function InvoiceModal({ invoice, onClose }: { invoice: InvoiceDet
   return <dialog ref={dialog} {...backdropHandlers} className="invoice-modal" aria-labelledby="invoice-modal-title" onCancel={event => { event.preventDefault(); onClose() }}>
     <div className="invoice-modal-content">
     <div className="invoice-modal-heading"><div><p className="eyebrow">DETALHES DA NOTA</p><h2 id="invoice-modal-title">{invoice.id}</h2></div><button type="button" className="modal-close" aria-label="Fechar detalhes da nota" onClick={onClose}>×</button></div>
-    <span className={`status ${invoice.aprovado ? 'approved' : 'rejected'}`}><span />{invoice.aprovado ? 'Aprovada' : 'Barrada'}</span>
+    <span className={`status ${invoice.aprovado ? 'approved' : 'rejected'}`}><span />{invoice.aprovado ? 'Aprovada' : 'Não aprovada'}</span>
+    {!invoice.aprovado && <section className="rejection-summary" aria-labelledby="rejection-title"><p className="eyebrow">ENTENDA O RESULTADO</p><h3 id="rejection-title">Por que esta nota não foi aprovada?</h3><p>{reasons.length ? `${reasons.length === 1 ? 'Encontramos 1 critério não atendido' : `Encontramos ${reasons.length} critérios não atendidos`} nesta análise. Veja a explicação e o que conferir em cada caso.` : 'Veja abaixo como conferir o resultado desta nota.'}</p><RejectionReasons reasons={reasons} /><p className="rejection-followup">Se houver dados incorretos, corrija o arquivo e envie uma nova análise. O resultado depende dos dados e das regras aplicadas naquele envio.</p></section>}
     <section><h3>Dados do recebível</h3><dl className="invoice-details-grid">
       <div><dt>Tipo</dt><dd>{invoice.tipo || 'Não informado'}</dd></div><div><dt>Valor nominal</dt><dd>{currency.format(invoice.valor)}</dd></div>
       <div><dt>Data de aquisição</dt><dd>{date(invoice.aquisicao)}</dd></div><div><dt>Vencimento original</dt><dd>{date(invoice.vencimento)}</dd></div>
@@ -45,11 +48,11 @@ export default function InvoiceModal({ invoice, onClose }: { invoice: InvoiceDet
       <div><dt>Sacado</dt><dd>{invoice.sacado}</dd></div><div><dt>Documento do sacado</dt><dd>{invoice.cnpj || 'Não informado'}</dd></div>
       <div><dt>Situação cadastral informada no arquivo</dt><dd>{invoice.situacaoCadastral || 'Não informada'}</dd></div>
     </dl></section>
-    <section><h3>Resultado da análise</h3>{invoice.aprovado ? <p>Todos os critérios ativos foram atendidos.</p> : invoice.motivos.length ? <ul className="invoice-reasons">{[...new Set(invoice.motivos)].map(reason => <li key={reason}><p>{formatReason(reason)}</p><small>{reason}</small></li>)}</ul> : <p>A API não informou os motivos do bloqueio.</p>}</section>
+    {invoice.aprovado && <section><h3>Resultado da análise</h3><p>Todos os critérios ativos foram atendidos.</p></section>}
     <section><h3>Simulação do recebível</h3>{invoice.precificacao ? <dl className="invoice-details-grid">
       <div><dt>Valor nominal da simulação</dt><dd>{currency.format(invoice.precificacao.valor_nominal)}</dd></div><div><dt>Prazo considerado</dt><dd>{invoice.precificacao.prazo_dias} dias</dd></div>
       <div><dt>Desconto</dt><dd>{currency.format(invoice.precificacao.valor_desconto)}</dd></div><div><dt>Valor líquido</dt><dd className="invoice-net-value">{currency.format(invoice.precificacao.valor_liquido)}</dd></div>
-    </dl> : <p>{invoice.aprovado ? 'A precificação não foi informada.' : 'A simulação não está disponível para notas barradas.'}</p>}</section>
+    </dl> : <p>{invoice.aprovado ? 'A precificação não foi informada.' : 'O valor líquido é calculado apenas para notas aprovadas. Por isso, esta nota não tem uma simulação.'}</p>}</section>
     <div className="validators-actions"><button type="button" onClick={onClose}>Fechar</button></div>
     </div>
   </dialog>
