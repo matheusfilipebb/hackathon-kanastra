@@ -1,3 +1,5 @@
+import { getReasonTitle, uniqueReasons } from './reasons.ts'
+
 export type DashboardRow = {
   fundo: string; fundoDocumento: string; aprovado: boolean; motivos: string[]
   valor: number; vencimento: string; sacado: string; cnpj: string
@@ -57,4 +59,20 @@ export function concentrationSummary(rows: DashboardRow[], kind: 'sacado' | 'ced
     grouped.set(key, group)
   }
   return [...grouped.values()].sort((a, b) => b.value - a.value || a.key.localeCompare(b.key))
+}
+
+export function reasonImpactSummary(rows: DashboardRow[]) {
+  const grouped = new Map<string, { label: string; value: number; count: number }>()
+  for (const row of rows) {
+    if (row.aprovado) continue
+    const reasons = uniqueReasons(row.motivos)
+    const labels = new Set((reasons.length ? reasons : ['Motivo não informado']).map(getReasonTitle))
+    for (const label of labels) {
+      const group = grouped.get(label) ?? { label, value: 0, count: 0 }
+      group.value += cents(row.valor)
+      group.count++
+      grouped.set(label, group)
+    }
+  }
+  return [...grouped.values()].sort((a, b) => b.value - a.value || b.count - a.count || a.label.localeCompare(b.label))
 }

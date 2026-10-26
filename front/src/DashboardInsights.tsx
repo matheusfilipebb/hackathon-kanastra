@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { concentrationSummary, maturitySummary, todayInSaoPaulo, financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
+import { reasonImpactSummary, concentrationSummary, maturitySummary, todayInSaoPaulo, financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
 import type { DashboardRow } from './dashboardMetrics'
 
 export function InsightMetrics({ items }: { items: { label: string; value: string; detail?: string }[] }) {
@@ -43,5 +43,14 @@ export function ConcentrationPanel({ rows }: { rows: DashboardRow[] }) {
     <div className="insight-switch" role="group" aria-label="Agrupar concentração por"><button type="button" aria-pressed={kind === 'sacado'} onClick={() => setKind('sacado')}>Sacados</button><button type="button" aria-pressed={kind === 'cedente'} onClick={() => setKind('cedente')}>Cedentes</button></div>
     <InsightMetrics items={[{ label: 'Maior participação', value: formatShare(groups[0]?.value ?? 0, total), detail: groups[0]?.label ?? 'Sem participantes' }, { label: 'Cinco maiores', value: formatShare(groups.slice(0, 5).reduce((sum, group) => sum + group.value, 0), total), detail: 'Participação conjunta no valor' }, { label: kind === 'sacado' ? 'Sacados no recorte' : 'Cedentes no recorte', value: number.format(groups.length), detail: 'Ranking dos dez maiores abaixo' }]} />
     <ValueBars label={`Ranking de concentração por ${kind}`} total={total} items={items} />
+  </InsightCard>
+}
+
+export function ReasonImpactPanel({ rows }: { rows: DashboardRow[] }) {
+  const reasons = reasonImpactSummary(rows)
+  const summary = financialSummary(rows)
+  return <InsightCard title="Motivos com maior impacto financeiro" note="Uma nota pode ter vários motivos e participar de mais de uma barra. Os valores não devem ser somados. Corrigir um motivo não garante aprovação nos demais critérios.">
+    <InsightMetrics items={[{ label: 'Valor não aprovado', value: money.format(summary.rejected / 100), detail: 'Cada nota contada uma única vez' }, { label: 'Maior impacto', value: money.format((reasons[0]?.value ?? 0) / 100), detail: reasons[0]?.label ?? 'Nenhum motivo no recorte' }, { label: 'Motivos encontrados', value: number.format(reasons.length), detail: 'Ordenados pelo valor afetado' }]} />
+    <ValueBars label="Ranking de motivos por valor afetado" total={summary.rejected} items={reasons.map(reason => ({ ...reason, detail: `${number.format(reason.count)} notas não aprovadas`, color: '#b77b32' }))} />
   </InsightCard>
 }

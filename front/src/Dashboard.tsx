@@ -3,7 +3,7 @@ import { getReasonTitle, uniqueReasons } from './reasons'
 import { useDashboardPanels } from './useDashboardPanels'
 import type { DashboardPanel } from './useDashboardPanels'
 import './Dashboard.css'
-import { FinancialPanel, MaturityPanel, ConcentrationPanel } from './DashboardInsights'
+import { FinancialPanel, MaturityPanel, ConcentrationPanel, ReasonImpactPanel } from './DashboardInsights'
 import { dashboardPanels } from './dashboardPanels'
 import type { DashboardRow } from './dashboardMetrics'
 
@@ -137,6 +137,9 @@ function Dashboard({ rows, selectedFund, onFundChange, activePanel, onPanelChang
       </section>
       <section id="dashboard-concentration" className={`dashboard-panel${activePanel === 4 ? ' is-active' : ''}`} data-position={activePanel === 4 ? 'current' : activePanel > 4 ? 'before' : 'after'} aria-label="Concentração da carteira" aria-hidden={activePanel !== 4} ref={element => { if (element) element.inert = activePanel !== 4 }}>
         <ConcentrationPanel rows={scopedRows} />
+      </section>
+      <section id="dashboard-reason-impact" className={`dashboard-panel${activePanel === 5 ? ' is-active' : ''}`} data-position={activePanel === 5 ? 'current' : activePanel > 5 ? 'before' : 'after'} aria-label="Impacto financeiro dos motivos" aria-hidden={activePanel !== 5} ref={element => { if (element) element.inert = activePanel !== 5 }}>
+        <ReasonImpactPanel rows={scopedRows} />
       </section>
     </div>
     <footer className="dashboard-panel-navigation">

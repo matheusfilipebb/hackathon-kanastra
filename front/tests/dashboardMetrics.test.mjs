@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { financialSummary, concentrationSummary, maturitySummary, dateDay, todayInSaoPaulo } from '../src/dashboardMetrics.ts'
+import { financialSummary, reasonImpactSummary, concentrationSummary, maturitySummary, dateDay, todayInSaoPaulo } from '../src/dashboardMetrics.ts'
 
 test('totais financeiros em centavos, incluindo zeros e ignorando valores inválidos', () => {
   assert.deepEqual(financialSummary([{valor:.1, aprovado:true},{valor:.2, aprovado:true},{valor:9.99, aprovado:false},{valor:NaN, aprovado:false},{valor:-10, aprovado:false}]), {approved:30,rejected:999,total:1029,invalid:2})
@@ -23,4 +23,12 @@ test('concentração agrupa documentos formatados, separa homônimos e conserva 
   assert.deepEqual(result.map(x=>[x.document,x.value,x.count]),[['12345',3000,2],['999',500,1]])
   assert.equal(concentrationSummary(rows,'cedente').length,2)
   assert.equal(result.reduce((sum,x)=>sum+x.value,0),3500)
+})
+
+test('impacto por motivo elimina duplicatas por nota e explicita motivos sobrepostos', () => {
+  const rows=[{valor:100,aprovado:false,motivos:['VALOR_MINIMO','VALOR_MINIMO','PRAZO_MAXIMO']},{valor:50,aprovado:false,motivos:['VALOR_MINIMO']},{valor:999,aprovado:true,motivos:['VALOR_MINIMO']},{valor:10,aprovado:false,motivos:[]}]
+  const result=reasonImpactSummary(rows)
+  assert.deepEqual(result.map(x=>[x.value,x.count]),[[15000,2],[10000,1],[1000,1]])
+  assert.equal(financialSummary(rows).rejected,16000)
+  assert.equal(result.reduce((sum,x)=>sum+x.value,0),26000)
 })
