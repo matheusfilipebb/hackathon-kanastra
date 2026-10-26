@@ -8,6 +8,8 @@ A atualização visual baseada na análise da Kanastra pelo REA está documentad
 
 Veja também a [apresentação dos resultados não aprovados](docs/resultados-nao-aprovados.md), com explicações dos critérios e orientações para conferir os dados.
 
+O [dashboard com troca de painéis](docs/dashboard.md) apresenta pizzas e colunas em uma tela fixa, com navegação por scroll, teclado, botões e gestos no celular.
+
 ## Telas
 
 ### Página inicial

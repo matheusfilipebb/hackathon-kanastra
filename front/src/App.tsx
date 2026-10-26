@@ -204,7 +204,7 @@ function App() {
   }
 
   return (
-    <div className={`app-shell${!isLoading && results.length > 0 ? ` app-shell--results${activeView === 'notas' ? ' app-shell--notes' : ''}` : ''}`}>
+    <div className={`app-shell${!isLoading && results.length > 0 ? ` app-shell--results${activeView === 'notas' ? ' app-shell--notes' : ' app-shell--dashboard'}` : ''}`}>
       {validatorsOpen && <ValidatorsModal apiUrl={API_URL} onClose={() => setValidatorsOpen(false)} />}
       {selectedInvoice && <InvoiceModal invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} />}
       {!isLoading && results.length > 0 && <AnalysisNavigation activeView={activeView} total={results.length} onViewChange={changeView} onNewAnalysis={resetAnalysis} />}
