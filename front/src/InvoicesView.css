@@ -1,0 +1,78 @@
+/* Notes have independent floating surfaces over a subtle landscape texture. */
+.app-shell--notes { position: relative; isolation: isolate; }
+.app-shell--notes::before { position: fixed; inset: 0; z-index: -1; content: ''; background: url('/videos/kanastra-hero-poster.webp') center / cover no-repeat; opacity: .035; mix-blend-mode: multiply; pointer-events: none; }
+.app-shell.app-shell--notes .main-content { padding-left: 0; }
+.app-shell--notes .results-section { background: transparent; box-shadow: none; }
+.app-shell--notes .results-controls { border: 1px solid #ffffffb3; border-radius: 16px; background: #fffcf5d9; box-shadow: 0 5px 24px #193c3207; }
+.app-shell--notes .results-table-panel { overflow: hidden; border: 1px solid #193c3214; border-radius: 16px; background: #fffdf9; box-shadow: 0 10px 32px #193c320c; }
+.app-shell--notes .listing-filters[hidden] { display: none; }
+.results-filters-toggle { display: inline-flex; align-items: center; justify-self: start; gap: 6px; margin-top: 12px; padding: 6px 8px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #597360; font-size: 11px; font-weight: 500; }
+.results-filters-toggle:hover { background: #e9eddf; }
+.results-filters-toggle.has-active-filters { border-color: #14735a66; background: #e9f1e4; }
+.active-filter-count { padding: 1px 6px; border-radius: 999px; background: #193c3210; font-size: 11px; }
+.filters-chevron { transition: transform .18s ease; }
+.results-filters-toggle[aria-expanded="true"] .filters-chevron { transform: rotate(180deg); }
+
+@media (min-width: 761px) {
+  .app-shell--notes .results-table-panel { width: calc(100% - clamp(128px, 8vw, 180px)); margin-inline: auto; }
+  .app-shell--notes .results-controls { width: calc(100% - clamp(96px, 6vw, 148px)); margin-inline: auto; }
+}
+
+@media (min-width: 1024px) {
+  .app-shell--notes { height: 100vh; height: 100dvh; overflow: hidden; padding: 16px 20px; }
+  .app-shell--notes .main-content { height: 100%; min-height: 0; }
+  .app-shell--notes .main-content > .workspace-grid { height: 100%; max-width: none; padding: 0; }
+  .app-shell--notes .left-column,.app-shell--notes #invoices-view { height: 100%; min-height: 0; }
+  .app-shell--notes > .app-footer { display: none; }
+  .app-shell--notes .results-section { display: flex; flex-direction: column; gap: 14px; height: 100%; min-height: 0; padding: 0; overflow: visible; border: 0; border-radius: 0; }
+  .app-shell--notes .results-controls { display: grid; grid-template-columns: minmax(170px, .8fr) minmax(0, 3fr) auto; grid-template-areas: 'title metrics toggle'; align-items: center; gap: 10px 12px; flex: 0 0 auto; padding: 12px 18px; }
+  .app-shell--notes .results-controls--filters-open { grid-template-areas: 'title metrics toggle' 'filters filters filters'; }
+  .app-shell--notes .results-filters-toggle { grid-area: toggle; justify-self: end; margin: 0; }
+  .app-shell--notes .results-header { grid-area: title; min-width: 0; }
+  .app-shell--notes .results-header h2 { font-size: clamp(18px, 1.5vw, 22px); line-height: 1.4; letter-spacing: -.7px; }
+  .app-shell--notes .invoice-table-hint { margin: 5px 0 0; font-size: 12px; line-height: 1.5; }
+  .app-shell--notes .metrics { grid-area: metrics; margin: 0; border: 0; background: transparent; }
+  .app-shell--notes .metrics > div,.app-shell--notes .metrics > div:not(:first-child) { display: flex; flex-wrap: wrap; align-items: baseline; align-content: center; gap: 2px 8px; min-width: 0; padding: 2px 14px; border-right: 0; border-left: 1px solid #193c321c; }
+  .app-shell--notes .metrics span { flex-basis: 100%; font-size: 10px; line-height: 1.5; letter-spacing: .04em; }
+  .app-shell--notes .metrics strong { font: 600 clamp(16px, 1.3vw, 20px)/1.4 'Inter', sans-serif; letter-spacing: -.4px; white-space: nowrap; }
+  .app-shell--notes .metrics > div:last-child strong { font-size: clamp(14px, 1.1vw, 18px); }
+  .app-shell--notes .metrics small { font-size: 11px; line-height: 1.4; white-space: nowrap; }
+  .app-shell--notes .listing-filters { grid-area: filters; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 12px; margin: 0; }
+  .app-shell--notes .listing-filters label { gap: 3px; font-size: 11px; }
+  .app-shell--notes .listing-filters input,.app-shell--notes .listing-filters select { padding: 7px 10px; border-color: #193c3226; border-radius: 8px; background: #ffffffb3; font-size: 14px; line-height: 1.5; }
+  .app-shell--notes .listing-filters button { padding: 8px 12px; border-radius: 8px; background: transparent; font-size: 12px; }
+  .app-shell--notes .results-table-panel { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; }
+  .app-shell--notes .table-toolbar { align-items: center; gap: 16px; flex: 0 0 auto; min-width: 0; margin: 0; padding: 0 18px; }
+  .app-shell--notes .tabs { gap: 22px; }
+  .app-shell--notes .tabs button { padding: 13px 0 11px; font-size: 13px; }
+  .app-shell--notes .tabs button.active { font-weight: 600; }
+  .app-shell--notes .tabs button span { margin-left: 5px; font: 11px 'Inter', sans-serif; }
+  .app-shell--notes .search-feedback { margin: 0; font-size: 12px; text-align: right; }
+  .app-shell--notes .table-wrap { flex: 1 1 0; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; scroll-padding-top: 56px; border-radius: 0; border-top: 1px solid #193c3212; background: transparent; box-shadow: none; }
+  .app-shell--notes .table-wrap table { border-collapse: separate; border-spacing: 0; }
+  .app-shell--notes .table-wrap th { position: sticky; top: 0; z-index: 2; padding: 10px 14px; background: #eef1e8; color: #43594c; font-size: 11px; font-weight: 600; line-height: 1.5; box-shadow: 0 1px 0 #193c321a; }
+  .app-shell--notes .table-wrap td { padding: 10px 14px; background: #fffdf9; font-size: 13px; }
+  .app-shell--notes .invoice-row:hover td,.app-shell--notes .invoice-row:focus-visible td { background: #f0f5ec; }
+  .app-shell--notes .table-wrap td strong { font-weight: 600; }
+  .app-shell--notes .table-wrap td small { color: #7b8d80; font-size: 12px; }
+  .app-shell--notes .pagination { flex: 0 0 auto; gap: 12px; min-height: 52px; margin: 0; padding: 10px 18px; border-top: 1px solid #193c3212; background: #fdfbf5; font-size: 12px; }
+  .app-shell--notes .pagination button { padding: 6px 11px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) { .filters-chevron { transition: none; } }
+
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .app-shell--notes .filters-toggle-label,.app-shell--notes .filters-chevron { display: none; }
+  .app-shell--notes .metrics > div,.app-shell--notes .metrics > div:not(:first-child) { padding-inline: 10px; }
+}
+
+@media (max-width: 1023px) {
+  .app-shell--notes .results-section { padding: 0; }
+  .app-shell--notes .results-controls { margin-bottom: 16px; padding: 18px 14px; }
+  .app-shell--notes .results-header h2 { font-size: 21px; }
+  .app-shell--notes .listing-filters { margin: 18px 0; }
+  .app-shell--notes .table-toolbar { padding: 14px; }
+  .app-shell--notes .search-feedback { margin: 0; }
+  .app-shell--notes .table-wrap { border-radius: 0; box-shadow: none; }
+  .app-shell--notes .pagination { padding: 0 12px 12px; }
+}

@@ -8,8 +8,8 @@ const explanations: Record<string, ReasonDetails> = {
   },
   SITUACAO_CADASTRAL_SACADO: {
     title: 'Cadastro do pagador não aceito',
-    description: 'Na base consultada pela análise, o pagador não foi encontrado ou sua situação cadastral não está entre as aceitas pelo fundo.',
-    action: 'Confira o CNPJ e a situação cadastral do pagador na base usada pela operação.',
+    description: 'O CNPJ do pagador não consta na base cadastral de demonstração usada pela análise ou está com uma situação que o fundo não aceita.',
+    action: 'Confira o CNPJ no arquivo e o cadastro na base da operação. A regra também depende das situações aceitas pelo fundo.',
   },
   TIPO_RECEBIVEL: {
     title: 'Tipo de recebível não aceito',

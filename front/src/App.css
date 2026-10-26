@@ -198,19 +198,6 @@ footer { border-color: rgba(25,60,50,.14); color: #668077; }
 .results-section .results-header { padding-top: 0; }
 .search-feedback { font-size: 12px; color: #668077; min-height: 18px; }
 
-.analysis-view-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
-.analysis-view-heading h1 { margin: 8px 0 12px; font: 400 clamp(24px, 3vw, 36px) 'Unbounded', sans-serif; letter-spacing: -1px; }
-.analysis-view-heading p:not(.eyebrow) { margin: 0; color: #668077; font-size: 14px; line-height: 1.6; }
-.analysis-view-heading .new-analysis-button { margin: 0; flex-shrink: 0; }
-.analysis-navigation { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-.analysis-navigation button { padding: 20px 24px; border: 1px solid #193c3220; border-radius: 16px; background: white; color: #193c32; text-align: left; }
-.analysis-navigation button[aria-pressed="true"] { background: #193c32; border-color: #193c32; color: white; }
-.analysis-navigation button:hover { box-shadow: 0 4px 14px #193c3214; }
-.analysis-navigation button strong { display: block; font-size: 16px; }
-.analysis-navigation button span { display: block; font-size: 12px; line-height: 1.5; margin-top: 8px; opacity: .75; }
-.analysis-navigation button small { display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 20px; background: #2daa8230; font-size: 11px; }
-@media (max-width: 600px) { .analysis-view-heading { align-items: flex-start; flex-direction: column; } .analysis-navigation button { padding: 16px 12px; } .analysis-navigation button strong { font-size: 14px; } }
-
 .invoice-row { cursor: pointer; }
 .invoice-row:hover td,.invoice-row:focus-visible td { background: #2daa8210; }
 .invoice-row:focus-visible { outline: 2px solid #14735a; outline-offset: -2px; }
@@ -236,7 +223,7 @@ footer { border-color: rgba(25,60,50,.14); color: #668077; }
 /* Readable text sizes shared by the list, controls and dialogs. */
 .table-wrap td,.listing-filters label,.listing-filters button,.validators-grid label { font-size: 14px; line-height: 1.5; }
 .table-wrap th { font-size: 13px; }
-.table-wrap td small,.invoice-details-grid dt,.invoice-reasons small,.analysis-navigation button span,.search-feedback,.pagination { font-size: 13px; line-height: 1.5; }
+.table-wrap td small,.invoice-details-grid dt,.invoice-reasons small,.search-feedback,.pagination { font-size: 13px; line-height: 1.5; }
 .status,.pagination button,.dashboard-legend li,.fund-bars-legend { font-size: 13px; }
 .listing-filters input,.listing-filters select,.validators-grid input,.validators-grid select { font-size: 16px; }
 .fund-axis-label,.fund-column-value { font-size: 13px; }

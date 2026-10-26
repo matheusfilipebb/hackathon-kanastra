@@ -1,0 +1,38 @@
+.analysis-navigation-layer { display: contents; }
+.analysis-dock { position: fixed; top: 50%; left: 20px; z-index: 15; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; transform: translateY(-50%); }
+.analysis-dock-new { position: fixed; left: 20px; bottom: 24px; z-index: 15; }
+.dock-button { display: flex; align-items: center; width: 48px; height: 48px; padding: 0; overflow: hidden; border: 1px solid #193c322b; border-radius: 999px; background: #fffcf5; color: #193c32; box-shadow: 0 4px 16px #102d251a; text-align: left; transition: width .24s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease; }
+.dock-icon { display: grid; place-items: center; flex: 0 0 46px; height: 46px; }
+.dock-label { display: inline-flex; align-items: center; gap: 8px; padding-right: 16px; opacity: 0; transform: translateX(-6px); white-space: nowrap; font-size: 13px; font-weight: 500; transition: opacity .16s ease, transform .24s ease; }
+.dock-label small { padding: 2px 6px; border-radius: 999px; background: #ffffff25; font-size: 10px; font-weight: 500; }
+.dock-button[aria-pressed="true"],.dock-button-new { border-color: #193c32; background: #193c32; color: #fffdf5; }
+.dock-button:focus-visible { width: 172px; outline: 2px solid #2daa82; outline-offset: 4px; box-shadow: 0 6px 22px #102d2529; }
+.dock-button:focus-visible .dock-label { opacity: 1; transform: translateX(0); }
+.app-shell--results .main-content { padding-top: 0; padding-left: 72px; }
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+  .dock-button:hover { width: 172px; background: #e9eddf; box-shadow: 0 6px 22px #102d2529; }
+  .dock-button[aria-pressed="true"]:hover,.dock-button-new:hover { background: #1e5546; }
+  .dock-button:hover .dock-label { opacity: 1; transform: translateX(0); }
+}
+@media (max-width: 760px) {
+  .analysis-dock,.analysis-dock-new { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .analysis-dock { top: auto; left: 14px; flex-direction: row; gap: 8px; transform: none; }
+  .analysis-dock-new { left: 118px; }
+  .dock-button,.dock-button:focus-visible { position: relative; width: 44px; height: 44px; overflow: visible; }
+  .dock-icon { flex-basis: 42px; height: 42px; }
+  .dock-icon svg { width: 20px; height: 20px; }
+  .dock-label { position: absolute; bottom: calc(100% + 10px); left: 0; padding: 8px 12px; border: 1px solid #193c322b; border-radius: 8px; background: #fffcf5; color: #193c32; box-shadow: 0 4px 16px #102d251a; pointer-events: none; transform: translateY(4px); }
+  .dock-button:focus-visible .dock-label { transform: translateY(0); }
+  .app-shell--results .main-content { padding-left: 0; }
+  .app-shell--results .dashboard { padding: 0 12px 16px; }
+  .app-shell--results .dashboard-legend { min-width: 0; flex-basis: 100%; }
+  .app-shell--results .tabs { flex-wrap: wrap; gap: 12px; }
+  .app-shell--results .metrics > div { min-width: 0; }
+  .app-shell--results .metrics strong { font-size: 18px; overflow-wrap: anywhere; }
+  .app-shell--results .pagination { flex-wrap: wrap; gap: 10px; }
+  .app-shell--results .pagination > div { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; width: 100%; min-width: 0; }
+  .app-shell--results .pagination button { padding: 8px; font-size: 12px; }
+  .app-shell--results .pagination strong { font-size: 12px; text-align: center; white-space: normal; }
+  .app-shell--results .app-footer { padding-left: 0; padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) { .dock-button,.dock-label { transition: none; } }
