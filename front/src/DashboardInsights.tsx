@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { maturitySummary, todayInSaoPaulo, financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
+import { concentrationSummary, maturitySummary, todayInSaoPaulo, financialSummary, formatCurrency as money, formatNumber as number, formatShare, share } from './dashboardMetrics'
 import type { DashboardRow } from './dashboardMetrics'
 
 export function InsightMetrics({ items }: { items: { label: string; value: string; detail?: string }[] }) {
@@ -27,5 +28,20 @@ export function MaturityPanel({ rows }: { rows: DashboardRow[] }) {
   return <InsightCard title="Agenda de vencimentos" note={`Referência: ${reference.split('-').reverse().join('/')} · horário de São Paulo. Inclui aprovadas e não aprovadas. Datas inválidas aparecem em uma faixa separada.`}>
     <InsightMetrics items={[{ label: 'Valor vencido', value: money.format(buckets[0].value / 100), detail: `${number.format(buckets[0].count)} notas` }, { label: 'Vence em até 7 dias', value: money.format((buckets[1].value + buckets[2].value) / 100), detail: 'Inclui as notas que vencem hoje' }, { label: 'Sem data válida', value: number.format(buckets[7].count), detail: 'Notas para conferir no arquivo' }]} />
     <ValueBars label="Valores por faixa de vencimento" total={total} items={buckets.map((bucket, index) => ({ ...bucket, detail: `${number.format(bucket.count)} notas`, color: index === 0 ? '#c35a50' : index < 3 ? '#b77b32' : '#2daa82' }))} />
+  </InsightCard>
+}
+
+export function ConcentrationPanel({ rows }: { rows: DashboardRow[] }) {
+  const [kind, setKind] = useState<'sacado' | 'cedente'>('sacado')
+  const groups = concentrationSummary(rows, kind)
+  const total = groups.reduce((sum, group) => sum + group.value, 0)
+  const top = groups.slice(0, 10)
+  const others = groups.slice(10)
+  const items = top.map(group => ({ label: `${group.label}${group.document ? ` · ${group.document}` : ''}`, value: group.value, detail: `${number.format(group.count)} notas${group.document ? '' : ' · agrupado pelo nome'}` }))
+  if (others.length) items.push({ label: 'Demais participantes', value: others.reduce((sum, group) => sum + group.value, 0), detail: `${number.format(others.length)} participantes` })
+  return <InsightCard title="Concentração da carteira" note="Participação no valor nominal do recorte, incluindo aprovadas e não aprovadas. Não substitui a validação de limites por fundo. Sem documento, o agrupamento usa o nome.">
+    <div className="insight-switch" role="group" aria-label="Agrupar concentração por"><button type="button" aria-pressed={kind === 'sacado'} onClick={() => setKind('sacado')}>Sacados</button><button type="button" aria-pressed={kind === 'cedente'} onClick={() => setKind('cedente')}>Cedentes</button></div>
+    <InsightMetrics items={[{ label: 'Maior participação', value: formatShare(groups[0]?.value ?? 0, total), detail: groups[0]?.label ?? 'Sem participantes' }, { label: 'Cinco maiores', value: formatShare(groups.slice(0, 5).reduce((sum, group) => sum + group.value, 0), total), detail: 'Participação conjunta no valor' }, { label: kind === 'sacado' ? 'Sacados no recorte' : 'Cedentes no recorte', value: number.format(groups.length), detail: 'Ranking dos dez maiores abaixo' }]} />
+    <ValueBars label={`Ranking de concentração por ${kind}`} total={total} items={items} />
   </InsightCard>
 }

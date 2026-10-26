@@ -3,7 +3,7 @@ import { getReasonTitle, uniqueReasons } from './reasons'
 import { useDashboardPanels } from './useDashboardPanels'
 import type { DashboardPanel } from './useDashboardPanels'
 import './Dashboard.css'
-import { FinancialPanel, MaturityPanel } from './DashboardInsights'
+import { FinancialPanel, MaturityPanel, ConcentrationPanel } from './DashboardInsights'
 import { dashboardPanels } from './dashboardPanels'
 import type { DashboardRow } from './dashboardMetrics'
 
@@ -134,6 +134,9 @@ function Dashboard({ rows, selectedFund, onFundChange, activePanel, onPanelChang
       </section>
       <section id="dashboard-maturity" className={`dashboard-panel${activePanel === 3 ? ' is-active' : ''}`} data-position={activePanel === 3 ? 'current' : activePanel > 3 ? 'before' : 'after'} aria-label="Agenda de vencimentos" aria-hidden={activePanel !== 3} ref={element => { if (element) element.inert = activePanel !== 3 }}>
         <MaturityPanel rows={scopedRows} />
+      </section>
+      <section id="dashboard-concentration" className={`dashboard-panel${activePanel === 4 ? ' is-active' : ''}`} data-position={activePanel === 4 ? 'current' : activePanel > 4 ? 'before' : 'after'} aria-label="Concentração da carteira" aria-hidden={activePanel !== 4} ref={element => { if (element) element.inert = activePanel !== 4 }}>
+        <ConcentrationPanel rows={scopedRows} />
       </section>
     </div>
     <footer className="dashboard-panel-navigation">

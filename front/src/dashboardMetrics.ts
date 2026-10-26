@@ -43,3 +43,18 @@ export function maturitySummary(rows: DashboardRow[], reference: string) {
   }
   return buckets
 }
+
+export type ConcentrationGroup = { key: string; label: string; document: string; value: number; count: number }
+export function concentrationSummary(rows: DashboardRow[], kind: 'sacado' | 'cedente') {
+  const grouped = new Map<string, ConcentrationGroup>()
+  for (const row of rows) {
+    const name = (kind === 'sacado' ? row.sacado : row.cedente)?.trim() || 'Nome não informado'
+    const document = (kind === 'sacado' ? row.cnpj : row.cedenteDocumento)?.replace(/\D/g, '') || ''
+    const key = document ? `doc:${document}` : `nome:${name.toLocaleLowerCase('pt-BR')}`
+    const group = grouped.get(key) ?? { key, label: name, document, value: 0, count: 0 }
+    group.value += cents(row.valor)
+    group.count++
+    grouped.set(key, group)
+  }
+  return [...grouped.values()].sort((a, b) => b.value - a.value || a.key.localeCompare(b.key))
+}
